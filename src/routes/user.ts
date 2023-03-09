@@ -3,7 +3,6 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
-import { sendEmail } from "../services/sendMail";
 import { tokenMiddleware } from "../middleware";
 import { forgotPassword, resetPassword } from "../controllers/user";
 const privateKey = process.env.PRIVATE_KEY;
@@ -13,9 +12,8 @@ const router = express.Router();
 router.get(
   "/",
   asyncHandler(async (req: express.Request, res: express.Response) => {
-    sendEmail("Runing Test", "fidekg123@gmail.com", "Thank you for testing")
-      .then((data) => res.status(200).json([{ message: data }]))
-      .catch((error) => res.status(200).json([{ message: error }]));
+    const users = await User.find({}).select("-password");
+    res.status(200).json(users);
   })
 );
 
