@@ -1,10 +1,11 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
-import * as dotenv from "dotenv";
-dotenv.config();
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
+import { sendEmail } from "../services/sendMail";
+import { tokenMiddleware } from "../middleware";
+import { forgotPassword, resetPassword } from "../controllers/user";
 const privateKey = process.env.PRIVATE_KEY;
 const allowRegistration = process.env.ALLOW_REGISTRATION as string;
 const router = express.Router();
@@ -12,8 +13,9 @@ const router = express.Router();
 router.get(
   "/",
   asyncHandler(async (req: express.Request, res: express.Response) => {
-    // Handle GET request to /users
-    res.status(200).json([{ message: "Hello World!" }]);
+    sendEmail("Runing Test", "fidekg123@gmail.com", "Thank you for testing")
+      .then((data) => res.status(200).json([{ message: data }]))
+      .catch((error) => res.status(200).json([{ message: error }]));
   })
 );
 
@@ -53,4 +55,8 @@ router.post(
     }
   })
 );
+
+router.post("/forgot-password", tokenMiddleware, forgotPassword);
+
+router.post("/reset-password/:resetToken", resetPassword);
 export default router;
