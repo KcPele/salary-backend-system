@@ -5,13 +5,21 @@ import helmet from "helmet";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
 import userRoutes from "./routes/user";
+
 import swaggerDocument from "./swagger.json";
+import { IUser } from "./models/user";
+import { Permission } from "accesscontrol";
 dotenv.config();
 
 declare global {
   export namespace Express {
+    interface Query {
+      [key: string]: string | string[] | undefined;
+    }
     interface Request {
-      userId: string;
+      user: {
+        _id: Object;
+      } & IUser;
     }
   }
 }

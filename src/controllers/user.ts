@@ -4,9 +4,10 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/user";
+import User, { IUser, IUserCreated } from "../models/user";
 import { MongooseError } from "mongoose";
 import { sendEmail } from "../services/sendMail";
+import { s3DeleteImageHelper } from "../middleware";
 const privateKey = process.env.PRIVATE_KEY;
 
 const generateToken = (id: any): string => {
@@ -19,21 +20,35 @@ const hashingPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
-async function createNewUser(email: string, password: string) {
-  //were to use bycript an jsonwebtokek
+const createNewUser = asyncHandler(
+  async (req: express.Request, res: express.Response) => {
+    let file = req.file as any;
+    try {
+      const userData: IUser = req.body;
+      userData.password = await hashingPassword(userData.password);
+      if (userData.password.length < 6)
+        throw new Error("Password must be up to 6 characters");
+      if (file) {
+        let image = {
+          key: file.key,
+          url: file.location,
+          name: file.originalname,
+        };
+        userData.image = image;
+      }
 
-  const hashPassword = await hashingPassword(password);
-  try {
-    const user = await User.create({ email, password: hashPassword });
-
-    const token = generateToken(user._id);
-    return { _id: user._id, email: user.email, token };
-  } catch (error) {
-    let errors = error as MongooseError;
-
-    return { errors: errors.message };
+      const user = await User.create(userData);
+      const token = generateToken(user._id);
+      res.status(200).json({ _id: user._id, email: user.email, token });
+    } catch (error) {
+      let errors = error as MongooseError;
+      if (file) {
+        s3DeleteImageHelper(file.key);
+      }
+      res.status(500).json({ errors: errors.message });
+    }
   }
-}
+);
 
 async function loginUser(email: string, password: string) {
   //were to use bycript an jsonwebtokek
@@ -54,8 +69,8 @@ async function loginUser(email: string, password: string) {
 const forgotPassword = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     try {
-      const user = await User.findById(req.userId);
-      const resetToken = generateToken(req.userId);
+      const user = await User.findById(req.user?._id);
+      const resetToken = generateToken(req.user?._id);
       sendEmail(
         "Password Reset",
         user?.email as string,
@@ -109,4 +124,64 @@ const resetPassword = asyncHandler(
     }
   }
 );
-export { createNewUser, loginUser, forgotPassword, resetPassword };
+
+const updateUser = asyncHandler(
+  async (req: express.Request, res: express.Response) => {
+    let file = req.file as any;
+    let id = req.params?.userId;
+    try {
+      const user = await User.findById(id);
+      if (!user) throw new Error("user not found");
+      const updateData: IUser = req.body;
+
+      if (file) {
+        if (user.image.key) {
+          s3DeleteImageHelper(user.image.key);
+        }
+        let image = {
+          key: file.key,
+          url: file.location,
+          name: file.originalname,
+        };
+        updateData.image = image;
+      }
+      s;
+      let updatedUSer = await User.findByIdAndUpdate({ _id: id }, updateData, {
+        new: true,
+      });
+      res.status(200).json(updatedUSer);
+    } catch (error: any) {
+      if (file) {
+        s3DeleteImageHelper(file.key);
+      }
+      res.status(500).json({ errors: error.message });
+    }
+  }
+);
+
+const deleteUser = asyncHandler(
+  async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const userId = req.params.userId;
+      await User.findByIdAndDelete(userId);
+      res.status(200).json({
+        data: null,
+        message: "User has been deleted",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+export {
+  createNewUser,
+  updateUser,
+  loginUser,
+  deleteUser,
+  forgotPassword,
+  resetPassword,
+};

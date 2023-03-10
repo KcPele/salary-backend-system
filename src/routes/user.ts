@@ -2,11 +2,16 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/user";
-import { tokenMiddleware } from "../middleware";
-import { forgotPassword, resetPassword } from "../controllers/user";
+import User, { IUser } from "../models/user";
+import { grantAccess, tokenMiddleware, upload } from "../middleware";
+import {
+  createNewUser,
+  deleteUser,
+  forgotPassword,
+  resetPassword,
+  updateUser,
+} from "../controllers/user";
 const privateKey = process.env.PRIVATE_KEY;
-const allowRegistration = process.env.ALLOW_REGISTRATION as string;
 const router = express.Router();
 
 router.get(
@@ -37,24 +42,23 @@ router.post(
     }
   })
 );
-router.post(
-  "/register",
-  asyncHandler(async (req: express.Request, res: express.Response) => {
-    if (allowRegistration === "false") {
-      res.status(400).json({ errors: "registration is closed" });
-    } else {
-      const { email, password } = req.body;
-      if (password.length < 6) {
-        res.status(400).json({ error: "Password must be up to 6 characters" });
-      } else {
-        const user = await User.createNewUser(email, password);
-        res.status(200).json(user);
-      }
-    }
-  })
-);
+router.post("/register", upload.single("file"), createNewUser);
 
 router.post("/forgot-password", tokenMiddleware, forgotPassword);
 
 router.post("/reset-password/:resetToken", resetPassword);
+
+router.put(
+  "/:userId",
+  tokenMiddleware,
+  grantAccess("updateAny", "profile"),
+  upload.single("file"),
+  updateUser
+);
+router.delete(
+  "/:userId",
+  tokenMiddleware,
+  grantAccess("deleteAny", "profile"),
+  deleteUser
+);
 export default router;
