@@ -40,12 +40,18 @@ const createNewUser = asyncHandler(
       const user = await User.create(userData);
       const token = generateToken(user._id);
       res.status(200).json({ _id: user._id, email: user.email, token });
-    } catch (error) {
-      let errors = error as MongooseError;
+    } catch (error: any) {
       if (file) {
         s3DeleteImageHelper(file.key);
       }
-      res.status(500).json({ errors: errors.message });
+      if (error.code === 11000) {
+        // duplicate key error
+        res
+          .status(409)
+          .json({ message: "user already exists for this with these detail" });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
     }
   }
 );
@@ -145,7 +151,7 @@ const updateUser = asyncHandler(
         };
         updateData.image = image;
       }
-      s;
+
       let updatedUSer = await User.findByIdAndUpdate({ _id: id }, updateData, {
         new: true,
       });
@@ -167,7 +173,11 @@ const deleteUser = asyncHandler(
   ) => {
     try {
       const userId = req.params.userId;
-      await User.findByIdAndDelete(userId);
+      let user = await User.findByIdAndDelete(userId);
+      if (user?.image.key) {
+        console.log(user.image.key);
+        s3DeleteImageHelper(user.image.key);
+      }
       res.status(200).json({
         data: null,
         message: "User has been deleted",

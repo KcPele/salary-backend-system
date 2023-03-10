@@ -11,6 +11,13 @@ export const roles = (function () {
     .extend("supervisor")
     .updateAny("profile")
     .deleteAny("profile");
-
+  ac.grant("basic").readOwn("record");
+  ac.grant("supervisor").extend("basic").readAny("record");
+  ac.grant("admin")
+    .extend("basic")
+    .extend("supervisor")
+    .createAny("record")
+    .updateAny("record")
+    .deleteAny("record");
   return ac;
 })();
