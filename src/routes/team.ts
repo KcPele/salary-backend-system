@@ -9,6 +9,7 @@ import {
   getTeamByMember,
   updateTeam,
   deleteTeam,
+  deleteTeamMember,
 } from "../controllers/team";
 const router = express.Router();
 
@@ -39,10 +40,18 @@ router.put(
   grantAccess("updateAny", "team"),
   updateTeam
 );
+
+router.delete(
+  "/:teamId/member/:memberUserId",
+  tokenMiddleware,
+  grantAccess("deleteAny", "team"),
+  deleteTeamMember
+);
 router.delete(
   "/:teamId",
   tokenMiddleware,
   grantAccess("deleteAny", "team"),
   deleteTeam
 );
+
 export default router;

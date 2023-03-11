@@ -137,6 +137,21 @@ const updateTeam = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+const deleteTeamMember = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const { teamId, memberUserId } = req.params;
+    const team = await TeamModel.findById(teamId);
+    if (!team) throw new Error("Team not found");
+    const memberIndex = team.members.indexOf(memberUserId as any);
+    if (memberIndex === -1) throw new Error("Member not found");
+    team.members.splice(memberIndex, 1);
+    await team.save();
+    res.status(200).json({ message: "Member deleted" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 const deleteTeam = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
@@ -156,4 +171,5 @@ export {
   getTeamByMember,
   updateTeam,
   deleteTeam,
+  deleteTeamMember,
 };
