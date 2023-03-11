@@ -28,6 +28,19 @@ const getRecord = asyncHandler(
   }
 );
 
+const getUserRecords = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+      const records = await RecordModel.find({ user: userId }).exec();
+      if (!records) throw new Error("user has no records yet");
+      res.status(200).json(records);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
 const createRecord = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     try {
@@ -66,14 +79,7 @@ const createRecord = asyncHandler(
       // Send response
       res.status(201).json(record);
     } catch (error: any) {
-      if (error.code === 11000) {
-        // duplicate key error
-        res
-          .status(409)
-          .json({ message: "Record already exists for this user" });
-      } else {
-        res.status(500).json({ message: error.message });
-      }
+      res.status(500).json({ message: error.message });
     }
   }
 );
@@ -125,4 +131,4 @@ const deleteRecord = asyncHandler(
   }
 );
 
-export { getAllRecords, createRecord, deleteRecord, updateRecord, getRecord };
+export { getAllRecords, createRecord, deleteRecord, updateRecord, getUserRecords, getRecord };

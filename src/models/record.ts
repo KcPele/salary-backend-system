@@ -22,8 +22,6 @@ const RecordSchema = new mongoose.Schema<IRecord, IRecordModel>(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      unique: true,
     },
   },
   { timestamps: true }

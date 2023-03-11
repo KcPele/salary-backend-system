@@ -5,6 +5,7 @@ import {
   getRecord,
   updateRecord,
   deleteRecord,
+  getUserRecords,
 } from "../controllers/record";
 import { tokenMiddleware } from "../middleware";
 import { grantAccess } from "../middleware";
@@ -23,6 +24,8 @@ router.get(
   grantAccess("readOwn", "record"),
   getRecord
 );
+
+router.get("/user/:userId", tokenMiddleware, getUserRecords);
 
 router.post(
   "/",
