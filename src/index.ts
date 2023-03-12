@@ -7,6 +7,7 @@ import swaggerUi from "swagger-ui-express";
 import userRoutes from "./routes/user";
 import teamRoutes from "./routes/team";
 import recordRoutes from "./routes/record";
+import activityRoutes from "./routes/activity";
 import swaggerDocument from "./swagger.json";
 import { IUser } from "./models/user";
 
@@ -67,6 +68,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/users", userRoutes);
 app.use("/teams", teamRoutes);
 app.use("/records", recordRoutes);
+app.use("/activities", activityRoutes);
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
