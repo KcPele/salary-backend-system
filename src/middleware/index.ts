@@ -90,3 +90,30 @@ export const grantAccess = (action: string, resource: string) => {
     }
   };
 };
+
+type Permission = "basic" | "read" | "create" | "edit" | "delete";
+
+export const permissionMiddleware = (permissions: Permission[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user as IUser;
+
+      // check if the user has at least one of the required permissions
+      const hasPermission = permissions.some(
+        (permission) => user.role === permission
+      );
+
+      if (!hasPermission) {
+        return res
+          .status(403)
+          .json({ message: "You are not authorized to access this resource" });
+      }
+
+      // if the user has the required permission, allow access to the protected route
+      return next();
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  };
+};

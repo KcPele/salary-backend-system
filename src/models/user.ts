@@ -1,8 +1,9 @@
 // import * as dotenv from "dotenv";
 import validation from "validator";
 // dotenv.config();
-import { Model, Schema, HydratedDocument, model } from "mongoose";
+import { Model, Schema, HydratedDocument, model, Types } from "mongoose";
 import { createNewUser, loginUser } from "../controllers/user";
+import { IPermission } from "./permission";
 
 export interface IUser {
   email: string;
@@ -23,6 +24,7 @@ export interface IUser {
   phone_number: string;
   group: string;
   team: string;
+  permissions: [Types.ObjectId | IPermission];
 }
 
 export interface IUserCreated extends IUser {
@@ -65,6 +67,7 @@ const schema = new Schema<IUser, UserModel>(
     phone_number: { type: String },
     group: { type: String },
     team: { type: String },
+    permissions: [{ type: Schema.Types.ObjectId, ref: "Permission" }],
   },
   { timestamps: true }
 );

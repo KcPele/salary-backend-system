@@ -1,6 +1,10 @@
 import express from "express";
 
-import { grantAccess, tokenMiddleware } from "../middleware";
+import {
+  grantAccess,
+  permissionMiddleware,
+  tokenMiddleware,
+} from "../middleware";
 import {
   createTeam,
   getAllTeams,
@@ -13,7 +17,7 @@ import {
 } from "../controllers/team";
 const router = express.Router();
 
-router.get("/", tokenMiddleware, grantAccess("readAny", "team"), getAllTeams);
+router.get("/", tokenMiddleware, permissionMiddleware(["read"]), getAllTeams);
 
 router.get(
   "/:teamId",

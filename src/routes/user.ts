@@ -22,6 +22,15 @@ router.get(
   })
 );
 
+router.get(
+  "/:userId",
+  asyncHandler(async (req: express.Request, res: express.Response) => {
+    const { userId } = req.params;
+    const users = await User.findById(userId).select("-password");
+    res.status(200).json(users);
+  })
+);
+
 router.post(
   "/login",
   asyncHandler(async (req: express.Request, res: express.Response) => {
