@@ -3,7 +3,7 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
-import { grantAccess, tokenMiddleware, upload } from "../middleware";
+import { tokenMiddleware, upload } from "../middleware";
 import {
   createNewUser,
   deleteUser,
@@ -26,7 +26,9 @@ router.get(
   "/:userId",
   asyncHandler(async (req: express.Request, res: express.Response) => {
     const { userId } = req.params;
-    const users = await User.findById(userId).select("-password");
+    const users = await User.findById(userId)
+      .populate("permission")
+      .select("-password");
     res.status(200).json(users);
   })
 );
@@ -60,14 +62,9 @@ router.post("/reset-password/:resetToken", resetPassword);
 router.put(
   "/:userId",
   tokenMiddleware,
-  grantAccess("updateAny", "profile"),
+
   upload.single("file"),
   updateUser
 );
-router.delete(
-  "/:userId",
-  tokenMiddleware,
-  grantAccess("deleteAny", "profile"),
-  deleteUser
-);
+router.delete("/:userId", tokenMiddleware, deleteUser);
 export default router;

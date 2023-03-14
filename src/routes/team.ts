@@ -1,10 +1,6 @@
 import express from "express";
 
-import {
-  grantAccess,
-  permissionMiddleware,
-  tokenMiddleware,
-} from "../middleware";
+import { permissionMiddleware, tokenMiddleware } from "../middleware";
 import {
   createTeam,
   getAllTeams,
@@ -22,39 +18,39 @@ router.get("/", tokenMiddleware, permissionMiddleware(["read"]), getAllTeams);
 router.get(
   "/:teamId",
   tokenMiddleware,
-  grantAccess("readOwn", "team"),
+
   getTeam
 );
 router.get(
   "/lead/:leadId",
   tokenMiddleware,
-  grantAccess("readOwn", "team"),
+
   getTeamByLead
 );
 router.get(
   "/member/:memberId",
   tokenMiddleware,
-  grantAccess("readOwn", "team"),
+
   getTeamByMember
 );
-router.post("/", tokenMiddleware, grantAccess("createAny", "team"), createTeam);
+router.post("/", tokenMiddleware, createTeam);
 router.put(
   "/:teamId",
   tokenMiddleware,
-  grantAccess("updateAny", "team"),
+
   updateTeam
 );
 
 router.delete(
   "/:teamId/member/:memberUserId",
   tokenMiddleware,
-  grantAccess("deleteAny", "team"),
+
   deleteTeamMember
 );
 router.delete(
   "/:teamId",
   tokenMiddleware,
-  grantAccess("deleteAny", "team"),
+
   deleteTeam
 );
 

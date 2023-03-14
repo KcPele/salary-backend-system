@@ -24,7 +24,7 @@ export interface IUser {
   phone_number: string;
   group: string;
   team: string;
-  permissions: [Types.ObjectId | IPermission];
+  permission: Types.ObjectId | IPermission;
 }
 
 export interface IUserCreated extends IUser {
@@ -67,7 +67,7 @@ const schema = new Schema<IUser, UserModel>(
     phone_number: { type: String },
     group: { type: String },
     team: { type: String },
-    permissions: [{ type: Schema.Types.ObjectId, ref: "Permission" }],
+    permission: { type: Schema.Types.ObjectId, ref: "Permission" },
   },
   { timestamps: true }
 );

@@ -8,6 +8,7 @@ import User, { IUser, IUserCreated } from "../models/user";
 import { MongooseError } from "mongoose";
 import { sendEmail } from "../services/sendMail";
 import { s3DeleteImageHelper } from "../middleware";
+import PermissionModel from "../models/permission";
 const privateKey = process.env.PRIVATE_KEY;
 
 const generateToken = (id: any): string => {
@@ -140,6 +141,11 @@ const updateUser = asyncHandler(
       if (!user) throw new Error("user not found");
       const updateData: IUser = req.body;
 
+      console.log(updateData);
+      if (updateData.permission) {
+        const permission = PermissionModel.findById(updateData.permission);
+        if (!permission) throw new Error("perssmission does not exist");
+      }
       if (file) {
         if (user.image.key) {
           s3DeleteImageHelper(user.image.key);

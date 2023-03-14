@@ -1,6 +1,6 @@
 import express from "express";
 
-import { tokenMiddleware } from "../middleware";
+import { permissionMiddleware, tokenMiddleware } from "../middleware";
 import {
   createActivity,
   getAllActivities,
@@ -10,7 +10,12 @@ import {
 } from "../controllers/activity";
 const router = express.Router();
 
-router.get("/", tokenMiddleware, getAllActivities);
+router.get(
+  "/",
+  tokenMiddleware,
+  permissionMiddleware(["read"]),
+  getAllActivities
+);
 router.get("/:activityId", tokenMiddleware, getActivity);
 router.get("/user/:userId", tokenMiddleware, getUserActivity);
 router.post("/", tokenMiddleware, createActivity);

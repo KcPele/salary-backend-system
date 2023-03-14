@@ -6,7 +6,7 @@ import multer from "multer";
 import { S3Client } from "@aws-sdk/client-s3";
 import multerS3 from "multer-s3";
 import User, { IUser } from "../models/user";
-import { roles } from "../permissions/roles";
+import PermissionModel from "../models/permission";
 dotenv.config();
 
 export const s3Config = new S3Client({
@@ -75,32 +75,16 @@ export const tokenMiddleware = async (
   }
 };
 
-export const grantAccess = (action: string, resource: string) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const permission = roles.can(req.user.role)[action](resource);
-      if (!permission.granted) {
-        return res.status(401).json({
-          error: "You don't have enough permission to perform this action",
-        });
-      }
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
-};
-
 type Permission = "basic" | "read" | "create" | "edit" | "delete";
 
 export const permissionMiddleware = (permissions: Permission[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = req.user as IUser;
-
+      const userRoles = await PermissionModel.findById(user.permission);
       // check if the user has at least one of the required permissions
-      const hasPermission = permissions.some(
-        (permission) => user.role === permission
+      const hasPermission = permissions.every((permission) =>
+        userRoles?.roles.includes(permission)
       );
 
       if (!hasPermission) {
