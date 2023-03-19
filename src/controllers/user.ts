@@ -141,7 +141,6 @@ const updateUser = asyncHandler(
       if (!user) throw new Error("user not found");
       const updateData: IUser = req.body;
 
-      console.log(updateData);
       if (updateData.permission) {
         const permission = PermissionModel.findById(updateData.permission);
         if (!permission) throw new Error("perssmission does not exist");

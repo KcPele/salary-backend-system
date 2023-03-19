@@ -19,17 +19,7 @@ const ActivitySchema = new mongoose.Schema<IActivity, IActivityModel>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    ip: {
-      type: mongoose.Schema.Types.String,
-      required: true,
-      validate: {
-        validator: function (value: string) {
-          // Use a regular expression to validate that the value is a valid IP address
-          return /^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(value);
-        },
-        message: (props) => `${props.value} is not a valid IP address`,
-      },
-    },
+   
   },
   { timestamps: true }
 );

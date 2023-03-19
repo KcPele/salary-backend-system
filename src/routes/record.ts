@@ -7,43 +7,41 @@ import {
   deleteRecord,
   getUserRecords,
 } from "../controllers/record";
-import { tokenMiddleware } from "../middleware";
+import { permissionMiddleware, tokenMiddleware } from "../middleware";
 const router = express.Router();
 
-router.get(
-  "/",
-  tokenMiddleware,
-
-  getAllRecords
-);
+router.get("/", tokenMiddleware, permissionMiddleware(["read"]), getAllRecords);
 
 router.get(
   "/:recordId",
   tokenMiddleware,
-
   getRecord
 );
 
-router.get("/user/:userId", tokenMiddleware, getUserRecords);
+router.get(
+  "/user/:userId",
+  tokenMiddleware,
+  getUserRecords
+);
 
 router.post(
   "/",
   tokenMiddleware,
-
+  permissionMiddleware(["create"]),
   createRecord
 );
 
 router.put(
   "/:recordId",
   tokenMiddleware,
-
+  permissionMiddleware(["edit"]),
   updateRecord
 );
 
 router.delete(
   "/:recordId",
   tokenMiddleware,
-
+  permissionMiddleware(["delete"]),
   deleteRecord
 );
 

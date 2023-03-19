@@ -38,9 +38,9 @@ const getUserActivity = asyncHandler(async (req: Request, res: Response) => {
 
 const createActivity = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const { action, userId, time, ip } = req.body;
+    const { action, userId, time } = req.body;
     // Validate required fields
-    if (!action || !userId || !time || !ip) {
+    if (!action || !userId || !time) {
       throw new Error("Please provide the required fields");
     }
     const user = User.findById(userId);
@@ -49,7 +49,6 @@ const createActivity = asyncHandler(async (req: Request, res: Response) => {
       action,
       user: userId,
       time,
-      ip,
     });
     res.status(200).json(activity);
   } catch (error: any) {

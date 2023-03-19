@@ -12,8 +12,8 @@ const PermissionSchema = new mongoose.Schema<IPermission, IPermissionModel>({
   roles: [
     {
       type: String,
-      default: "basic",
-      enum: ["basic", "read", "create", "edit", "delete"],
+      default: "read",
+      enum: ["read", "create", "edit", "delete"],
     },
   ],
 });

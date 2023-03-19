@@ -33,24 +33,24 @@ router.get(
 
   getTeamByMember
 );
-router.post("/", tokenMiddleware, createTeam);
+router.post("/", tokenMiddleware, permissionMiddleware(["create"]), createTeam);
 router.put(
   "/:teamId",
   tokenMiddleware,
-
+  permissionMiddleware(["edit"]),
   updateTeam
 );
 
 router.delete(
   "/:teamId/member/:memberUserId",
   tokenMiddleware,
-
+  permissionMiddleware(["delete"]),
   deleteTeamMember
 );
 router.delete(
   "/:teamId",
   tokenMiddleware,
-
+  permissionMiddleware(["delete"]),
   deleteTeam
 );
 

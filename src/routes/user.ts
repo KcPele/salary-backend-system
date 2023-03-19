@@ -3,7 +3,7 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
-import { tokenMiddleware, upload } from "../middleware";
+import { permissionMiddleware, tokenMiddleware, upload } from "../middleware";
 import {
   createNewUser,
   deleteUser,
@@ -62,9 +62,14 @@ router.post("/reset-password/:resetToken", resetPassword);
 router.put(
   "/:userId",
   tokenMiddleware,
-
+  permissionMiddleware(["edit"]),
   upload.single("file"),
   updateUser
 );
-router.delete("/:userId", tokenMiddleware, deleteUser);
+router.delete(
+  "/:userId",
+  tokenMiddleware,
+  permissionMiddleware(["edit"]),
+  deleteUser
+);
 export default router;

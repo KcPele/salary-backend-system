@@ -75,7 +75,7 @@ export const tokenMiddleware = async (
   }
 };
 
-type Permission = "basic" | "read" | "create" | "edit" | "delete";
+type Permission = "read" | "create" | "edit" | "delete";
 
 export const permissionMiddleware = (permissions: Permission[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -88,9 +88,9 @@ export const permissionMiddleware = (permissions: Permission[]) => {
       );
 
       if (!hasPermission) {
-        return res
-          .status(403)
-          .json({ message: "You are not authorized to access this resource" });
+        return res.status(403).json({
+          message: "You do not have enough permmsion to perform this action",
+        });
       }
 
       // if the user has the required permission, allow access to the protected route

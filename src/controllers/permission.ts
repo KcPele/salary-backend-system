@@ -39,7 +39,7 @@ const updatePermission = asyncHandler(async (req: Request, res: Response) => {
     }
     const updatedPermission: IPermission | null =
       await PermissionModel.findByIdAndUpdate(
-        req.params.id,
+        { _id: req.params.permissionId },
         { name, roles },
         { new: true }
       );
@@ -49,6 +49,7 @@ const updatePermission = asyncHandler(async (req: Request, res: Response) => {
       res.status(404).json({ message: "Permission not found" });
     }
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 });

@@ -8,7 +8,6 @@ import { IPermission } from "./permission";
 export interface IUser {
   email: string;
   password: string;
-  role: string;
   image: {
     key: string;
     url: string;
@@ -47,11 +46,6 @@ const schema = new Schema<IUser, UserModel>(
       validate: [validation.isEmail, "invalid email"],
     },
     password: { type: String, required: true },
-    role: {
-      type: String,
-      default: "basic",
-      enum: ["basic", "supervisor", "admin"],
-    },
     image: {
       key: { type: String, required: true },
       url: { type: String, required: true },
