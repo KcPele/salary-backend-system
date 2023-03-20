@@ -1,0 +1,359 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Lorchain Salary API",
+        "version": "1.0.0"
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "paths": {
+        "/users": {
+            "get": {
+                "tags": ["Users"],
+                "summary": "Returns a list of users",
+                "description": "Returns a list of users with their IDs and email addresses",
+                "produces": ["application/json"],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "_id": {
+                                        "type": "string",
+                                        "example": "615e7bce3a3b2e001789fa05"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "tags": ["Users"],
+                "summary": "Logs in a user with email and password",
+                "description": "Logs in a user with email and password and returns a token",
+                "produces": ["application/json"],
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "User email and password",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": ["email", "password"],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "description": "User's email address"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "User's password"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_id": {
+                                    "type": "string",
+                                    "example": "615e7bce3a3b2e001789fa05"
+                                },
+                                "token": {
+                                    "type": "string",
+                                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE2MzI4OTMzMTMsImV4cCI6MTYzMjg5NjExM30.p8h2SmSVBzptD9XbsxamAzv8ScJ1wVDc1aEKPZa_YvA"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "example": "user@example.com"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email or password"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/users/register": {
+            "post": {
+                "tags": ["Users"],
+                "summary": "Registers a new user",
+                "description": "Registers a new user with an email and password",
+                "produces": ["application/json"],
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "User email and password",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": ["email", "password"],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "description": "User's email address"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "User's password"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Register",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "_id": {
+                                    "type": "string",
+                                    "example": "615e7bce3a3b2e001789fa05"
+                                },
+                                "token": {
+                                    "type": "string",
+                                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE2MzI4OTMzMTMsImV4cCI6MTYzMjg5NjExM30.p8h2SmSVBzptD9XbsxamAzv8ScJ1wVDc1aEKPZa_YvA"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "example": "user@example.com"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email or password"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/users/forgot-password": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": ["Users", "Forgot Password"],
+                "summary": "Send reset link to authenticated user's email",
+                "description": "This endpoint sends a reset link to the authenticated user's email address.",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Password reset link sent to users email"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/users/reset-password/{resetToken}": {
+            "post": {
+                "tags": ["Users", "Forgot Password"],
+                "summary": "Reset user password",
+                "description": "This endpoint  resets the users password.",
+                "parameters": [
+                    {
+                        "name": "resetToken",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "newPassword": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "oldPassword": {
+                                    "type": "string",
+                                    "required": true
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Password successfully reset"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/activities": {
+            "get": {
+                "summary": "Get all activities",
+                "description": "Retrieve a list of all activities",
+                "tags": ["activities"],
+                "security": [{ "bearerAuth": [] }],
+                "responses": {
+                    "200": {
+                        "description": "A list of activities",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": { "$ref": "#/components/schemas/Activity" }
+                                }
+                            }
+                        }
+                    },
+                    "401": { "$ref": "#/components/responses/Unauthorized" },
+                    "500": { "$ref": "#/components/responses/InternalServerError" }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Activity": {
+                "type": "object",
+                "properties": {
+                    "_id": {
+                        "type": "string",
+                        "description": "The unique identifier for the activity"
+                    },
+                    "action": {
+                        "type": "string",
+                        "description": "The action performed by the user"
+                    },
+                    "time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The timestamp when the activity was performed"
+                    },
+                    "user": {
+                        "type": "string",
+                        "description": "The ID of the user who performed the activity"
+                    },
+                    "ip": {
+                        "type": "string",
+                        "description": "The IP address of the user who performed the activity"
+                    }
+                },
+                "example": {
+                    "_id": "6156d5a6c583bc6de9b6c5b8",
+                    "action": "login",
+                    "time": "2021-10-01T08:00:00.000Z",
+                    "user": "6156d5a6c583bc6de9b6c5b7",
+                    "ip": "192.168.0.1"
+                }
+            }
+        },
+        "responses": {
+            "Unauthorized": { "description": "Invalid authentication token" },
+            "InternalServerError": {
+                "description": "An unexpected error occurred on the server"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "definitions": {
+        "usersResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "userReg": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "InvalidResponse": {
+            "type": "object",
+            "properties": {
+                "statusCode": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
