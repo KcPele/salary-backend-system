@@ -8,6 +8,7 @@ import {
   createNewUser,
   deleteUser,
   forgotPassword,
+  loginUser,
   resetPassword,
   updateUser,
 } from "../controllers/user";
@@ -33,27 +34,15 @@ router.get(
   })
 );
 
+router.post("/login", loginUser);
 router.post(
-  "/login",
-  asyncHandler(async (req: express.Request, res: express.Response) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      res.status(400).json({ error: "Wrong credentials please try again" });
-    } else {
-      const comparedPass = await bcrypt.compare(password, user.password);
-      if (!comparedPass) {
-        res.status(400).json({ error: "Wrong credentials please try again" });
-      } else {
-        const token = jwt.sign({ _id: user._id }, privateKey as string, {
-          expiresIn: 60 * 60 * 48,
-        });
-        res.status(200).json({ _id: user._id, email: user.email, token });
-      }
-    }
-  })
+  "/register",
+  tokenMiddleware,
+  permissionMiddleware(["create"]),
+  upload.single("file"),
+  createNewUser
 );
-router.post("/register", upload.single("file"), createNewUser);
+router.post("/register/lorchain-admin", upload.single("file"), createNewUser);
 
 router.post("/forgot-password", tokenMiddleware, forgotPassword);
 

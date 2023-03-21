@@ -13,13 +13,12 @@ interface IActivityModel extends Model<IActivity> {}
 const ActivitySchema = new mongoose.Schema<IActivity, IActivityModel>(
   {
     action: { type: String, required: true },
-
+    ip: { type: String, default: "login" },
     time: { type: Date },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-   
   },
   { timestamps: true }
 );

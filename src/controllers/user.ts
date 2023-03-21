@@ -4,13 +4,13 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User, { IUser, IUserCreated } from "../models/user";
-import { MongooseError } from "mongoose";
+import User, { IUser } from "../models/user";
 import { sendEmail } from "../services/sendMail";
 import { s3DeleteImageHelper } from "../middleware";
 import PermissionModel from "../models/permission";
+import { createActivity } from "./activity";
 const privateKey = process.env.PRIVATE_KEY;
-
+const adminEmail = process.env.ADMIN_EMAIL;
 const generateToken = (id: any): string => {
   return jwt.sign({ _id: id }, privateKey as string, {
     expiresIn: 60 * 60 * 48,
@@ -21,14 +21,23 @@ const hashingPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
+const generatePassword = (length = 9) => {
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += charset[Math.floor(Math.random() * charset.length)];
+  }
+  return password;
+};
 const createNewUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     let file = req.file as any;
     try {
       const userData: IUser = req.body;
-      userData.password = await hashingPassword(userData.password);
-      if (userData.password.length < 6)
-        throw new Error("Password must be up to 6 characters");
+      let password = generatePassword();
+      userData.password = await hashingPassword(password);
+
       if (file) {
         let image = {
           key: file.key,
@@ -38,9 +47,24 @@ const createNewUser = asyncHandler(
         userData.image = image;
       }
 
+      if (adminEmail === userData.email) {
+        let newPermission = await PermissionModel.create({
+          name: "admin",
+          roles: ["read", "create", "edit", "delete"],
+        });
+        userData.permission = newPermission._id;
+      }
+
       const user = await User.create(userData);
-      const token = generateToken(user._id);
-      res.status(200).json({ _id: user._id, email: user.email, token });
+      await sendEmail(
+        "User created",
+        user.email,
+        `your account has been created and your password is : <strong>${password}</strong>`
+      );
+      if (req.user) {
+        createActivity("New Staff created", req.user._id);
+      }
+      res.status(200).json({ message: "user created successfully" });
     } catch (error: any) {
       if (file) {
         s3DeleteImageHelper(file.key);
@@ -57,21 +81,31 @@ const createNewUser = asyncHandler(
   }
 );
 
-async function loginUser(email: string, password: string) {
-  //were to use bycript an jsonwebtokek
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new Error("Wrong credentials please try again");
-  } else {
-    const comparedPass = await bcrypt.compare(password, user.password);
-    if (!comparedPass) {
-      throw new Error("Wrong credentials please try again");
+const loginUser = asyncHandler(
+  async (req: express.Request, res: express.Response) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(400).json({ error: "Wrong credentials please try again" });
     } else {
-      const token = generateToken(user._id);
-      return { _id: user._id, email: user.email, token };
+      const comparedPass = await bcrypt.compare(password, user.password);
+      if (!comparedPass) {
+        res.status(400).json({ error: "Wrong credentials please try again" });
+      } else {
+        const token = generateToken(user._id);
+        if (user.permission) {
+          createActivity(`${user.email} logged in`, user._id);
+        }
+        res.status(200).json({
+          _id: user._id,
+          email: user.email,
+          token,
+          permission: user.permission,
+        });
+      }
     }
   }
-}
+);
 
 const forgotPassword = asyncHandler(
   async (req: express.Request, res: express.Response) => {
@@ -157,10 +191,11 @@ const updateUser = asyncHandler(
         updateData.image = image;
       }
 
-      let updatedUSer = await User.findByIdAndUpdate({ _id: id }, updateData, {
+      let updatedUser = await User.findByIdAndUpdate({ _id: id }, updateData, {
         new: true,
       });
-      res.status(200).json(updatedUSer);
+      createActivity(`${updatedUser?.email} was updated`, req.user._id);
+      res.status(200).json(updatedUser);
     } catch (error: any) {
       if (file) {
         s3DeleteImageHelper(file.key);
@@ -183,6 +218,7 @@ const deleteUser = asyncHandler(
         console.log(user.image.key);
         s3DeleteImageHelper(user.image.key);
       }
+      createActivity(`${user?.email} was deleted`, req.user._id);
       res.status(200).json({
         data: null,
         message: "User has been deleted",

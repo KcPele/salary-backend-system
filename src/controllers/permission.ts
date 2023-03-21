@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 
 import PermissionModel, { IPermission } from "../models/permission";
+import { createActivity } from "./activity";
 
 const getAllPermission = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -24,6 +25,7 @@ const createPermission = asyncHandler(async (req: Request, res: Response) => {
     }
     const newPermission: IPermission = new PermissionModel({ name, roles });
     await newPermission.save();
+    createActivity("New permission created", req.user._id);
     res.status(201).json(newPermission);
   } catch (error) {
     console.error(error);
@@ -43,11 +45,12 @@ const updatePermission = asyncHandler(async (req: Request, res: Response) => {
         { name, roles },
         { new: true }
       );
-    if (updatedPermission) {
-      res.status(200).json(updatedPermission);
-    } else {
-      res.status(404).json({ message: "Permission not found" });
-    }
+    if (!updatedPermission) throw new Error("Permission not found");
+    createActivity(
+      `${updatedPermission.name} permission updated`,
+      req.user._id
+    );
+    res.status(200).json(updatedPermission);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -59,11 +62,12 @@ const deletePermission = asyncHandler(async (req: Request, res: Response) => {
     const deletedPermission = await PermissionModel.findByIdAndDelete(
       req.params.permissionId
     );
-    if (deletedPermission) {
-      res.status(204).send({ message: "Successfully deleted" });
-    } else {
-      res.status(404).json({ message: "Permission not found" });
-    }
+    if (!deletedPermission) throw new Error("Permission not found");
+    createActivity(
+      `${deletedPermission.name} permssion was deleted`,
+      req.user._id
+    );
+    res.status(204).send({ message: "Successfully deleted" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

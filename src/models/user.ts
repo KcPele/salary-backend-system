@@ -4,6 +4,7 @@ import validation from "validator";
 import { Model, Schema, HydratedDocument, model, Types } from "mongoose";
 import { createNewUser, loginUser } from "../controllers/user";
 import { IPermission } from "./permission";
+import { ITeam } from "./team";
 
 export interface IUser {
   email: string;
@@ -21,8 +22,7 @@ export interface IUser {
   end_date: Date;
   address: string;
   phone_number: string;
-  group: string;
-  team: string;
+  team: Types.ObjectId | ITeam;
   permission: Types.ObjectId | IPermission;
 }
 
@@ -47,9 +47,9 @@ const schema = new Schema<IUser, UserModel>(
     },
     password: { type: String, required: true },
     image: {
-      key: { type: String, required: true },
-      url: { type: String, required: true },
-      name: { type: String, required: true },
+      key: { type: String },
+      url: { type: String },
+      name: { type: String },
     },
     full_name: { type: String },
     gender: { type: String },
@@ -59,16 +59,11 @@ const schema = new Schema<IUser, UserModel>(
     end_date: { type: Date, default: null },
     address: { type: String },
     phone_number: { type: String },
-    group: { type: String },
-    team: { type: String },
+    team: { type: Schema.Types.ObjectId, ref: "Team" },
     permission: { type: Schema.Types.ObjectId, ref: "Permission" },
   },
   { timestamps: true }
 );
-
-schema.static("createNewUser", createNewUser);
-
-schema.static("loginUser", loginUser);
 
 const User = model<IUser, UserModel>("User", schema);
 

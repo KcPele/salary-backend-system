@@ -5,7 +5,7 @@ import User from "../models/user";
 
 const getAllActivities = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const activitys = await ActivityModel.find();
+    const activitys = await ActivityModel.find().populate("user");
     res.status(200).json(activitys);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -36,25 +36,34 @@ const getUserActivity = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-const createActivity = asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { action, userId, time } = req.body;
-    // Validate required fields
-    if (!action || !userId || !time) {
-      throw new Error("Please provide the required fields");
-    }
-    const user = User.findById(userId);
-    if (!user) throw new Error("User not found");
-    const activity = await ActivityModel.create({
-      action,
-      user: userId,
-      time,
-    });
-    res.status(200).json(activity);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-});
+const createActivity = async (action: string, user: Object) => {
+  await ActivityModel.create({
+    action,
+    user,
+    time: Date.now(),
+  });
+};
+
+// const createActivity = asyncHandler(async (req: Request, res: Response) => {
+//   try {
+//     const { action, userId, time, ip } = req.body;
+//     // Validate required fields
+//     if (!action || !userId || !time) {
+//       throw new Error("Please provide the required fields");
+//     }
+//     const user = User.findById(userId);
+//     if (!user) throw new Error("User not found");
+//     const activity = await ActivityModel.create({
+//       action,
+//       user: userId,
+//       time,
+//       ip
+//     });
+//     res.status(200).json(activity);
+//   } catch (error: any) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 const deleteActivity = asyncHandler(async (req: Request, res: Response) => {
   try {

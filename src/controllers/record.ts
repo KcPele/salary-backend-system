@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import RecordModel, { IRecord } from "../models/record";
 import asyncHandler from "express-async-handler";
 import User from "../models/user";
+import { createActivity } from "./activity";
 const getAllRecords = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     try {
@@ -75,7 +76,7 @@ const createRecord = asyncHandler(
 
       // Save record to database
       await record.save();
-
+      createActivity("Record created", req.user._id);
       // Send response
       res.status(201).json(record);
     } catch (error: any) {
@@ -110,6 +111,7 @@ const updateRecord = asyncHandler(
           new: true,
         }
       );
+      createActivity(`Record updated`, req.user._id);
       res.status(200).json(record);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -123,7 +125,7 @@ const deleteRecord = asyncHandler(
 
       const record = await RecordModel.findByIdAndDelete(recordId);
       if (!record) throw new Error("Record not found");
-
+      createActivity("Record deleted", req.user._id);
       res.json({ message: "Record deleted" });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -131,4 +133,11 @@ const deleteRecord = asyncHandler(
   }
 );
 
-export { getAllRecords, createRecord, deleteRecord, updateRecord, getUserRecords, getRecord };
+export {
+  getAllRecords,
+  createRecord,
+  deleteRecord,
+  updateRecord,
+  getUserRecords,
+  getRecord,
+};

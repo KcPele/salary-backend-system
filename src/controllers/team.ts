@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import TeamModel from "../models/team";
 import User from "../models/user";
+import ActivityModel from "../models/activity";
+import { createActivity } from "./activity";
 
 const getAllTeams = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -77,6 +79,7 @@ const createTeam = asyncHandler(async (req: Request, res: Response) => {
       members: membersId,
     });
     await team.save();
+    createActivity("Team created", req.user._id);
     res.status(201).json(team);
   } catch (error: any) {
     if (error.code === 11000) {
@@ -125,6 +128,8 @@ const updateTeam = asyncHandler(async (req: Request, res: Response) => {
       },
       { new: true }
     ).populate("lead");
+    createActivity(`Team ${updatedTeam?.name} was updated`, req.user._id);
+
     res.status(200).json(updatedTeam);
   } catch (error: any) {
     if (error.code === 11000) {
@@ -146,6 +151,10 @@ const deleteTeamMember = asyncHandler(async (req: Request, res: Response) => {
     if (memberIndex === -1) throw new Error("Member not found");
     team.members.splice(memberIndex, 1);
     await team.save();
+    createActivity(
+      `A memeber from team ${team.name} was deleted`,
+      req.user._id
+    );
     res.status(200).json({ message: "Member deleted" });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -157,6 +166,7 @@ const deleteTeam = asyncHandler(async (req: Request, res: Response) => {
     const { teamId } = req.params;
     const team = await TeamModel.findByIdAndDelete(teamId);
     if (!team) throw new Error("Team not found");
+    createActivity(`Team ${team.name} was deleted`, req.user._id);
     res.status(200).json({ message: "Team deleted" });
   } catch (error: any) {
     res.status(500).json({ message: error.message });

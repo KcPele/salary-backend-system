@@ -28,12 +28,12 @@ router.get(
   permissionMiddleware(["read"]),
   getUserActivity
 );
-router.post(
-  "/",
-  tokenMiddleware,
-  permissionMiddleware(["create"]),
-  createActivity
-);
+// router.post(
+//   "/",
+//   tokenMiddleware,
+//   permissionMiddleware(["create"]),
+//   createActivity
+// );
 router.delete(
   "/:activityId",
   tokenMiddleware,
