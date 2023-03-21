@@ -10,6 +10,7 @@ import { s3DeleteImageHelper } from "../middleware";
 import PermissionModel from "../models/permission";
 import { createActivity } from "./activity";
 import { Document } from "mongoose";
+import { generatePassword } from "../utils";
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
 const generateToken = (id: any): string => {
@@ -22,15 +23,7 @@ const hashingPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
-const generatePassword = (length = 9) => {
-  const charset =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += charset[Math.floor(Math.random() * charset.length)];
-  }
-  return password;
-};
+
 const createNewUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     let file = req.file as any;

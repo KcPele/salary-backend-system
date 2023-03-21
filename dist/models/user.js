@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const validator_1 = __importDefault(require("validator"));
 // dotenv.config();
 const mongoose_1 = require("mongoose");
-const user_1 = require("../controllers/user");
 const schema = new mongoose_1.Schema({
     email: {
         type: String,
@@ -17,9 +16,9 @@ const schema = new mongoose_1.Schema({
     },
     password: { type: String, required: true },
     image: {
-        key: { type: String, required: true },
-        url: { type: String, required: true },
-        name: { type: String, required: true },
+        key: { type: String },
+        url: { type: String },
+        name: { type: String },
     },
     full_name: { type: String },
     gender: { type: String },
@@ -29,12 +28,9 @@ const schema = new mongoose_1.Schema({
     end_date: { type: Date, default: null },
     address: { type: String },
     phone_number: { type: String },
-    group: { type: String },
-    team: { type: String },
+    team: { type: mongoose_1.Schema.Types.ObjectId, ref: "Team" },
     permission: { type: mongoose_1.Schema.Types.ObjectId, ref: "Permission" },
 }, { timestamps: true });
-schema.static("createNewUser", user_1.createNewUser);
-schema.static("loginUser", user_1.loginUser);
 const User = (0, mongoose_1.model)("User", schema);
 exports.default = User;
 //# sourceMappingURL=user.js.map

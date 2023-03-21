@@ -7,9 +7,15 @@ exports.getRecord = exports.getUserRecords = exports.updateRecord = exports.dele
 const record_1 = __importDefault(require("../models/record"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const user_1 = __importDefault(require("../models/user"));
+const activity_1 = require("./activity");
 const getAllRecords = (0, express_async_handler_1.default)(async (req, res) => {
     try {
-        const records = await record_1.default.find().populate("user").exec();
+        const records = await record_1.default.find()
+            .populate({
+            path: "user",
+            select: "_id email full_name image",
+        })
+            .sort("-createdAt");
         res.json(records);
     }
     catch (error) {
@@ -21,7 +27,10 @@ const getRecord = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const { recordId } = req.params;
         const record = await record_1.default.findById(recordId)
-            .populate("user")
+            .populate({
+            path: "user",
+            select: "_id email full_name image",
+        })
             .exec();
         if (!record)
             throw new Error("Record not found");
@@ -35,7 +44,7 @@ exports.getRecord = getRecord;
 const getUserRecords = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const { userId } = req.params;
-        const records = await record_1.default.find({ user: userId }).exec();
+        const records = await record_1.default.find({ user: userId }).sort("-createdAt");
         if (!records)
             throw new Error("user has no records yet");
         res.status(200).json(records);
@@ -68,6 +77,7 @@ const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
         });
         // Save record to database
         await record.save();
+        (0, activity_1.createActivity)("Record created", req.user._id);
         // Send response
         res.status(201).json(record);
     }
@@ -97,6 +107,7 @@ const updateRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const record = await record_1.default.findByIdAndUpdate({ _id: recordId }, recordData, {
             new: true,
         });
+        (0, activity_1.createActivity)(`Record updated`, req.user._id);
         res.status(200).json(record);
     }
     catch (error) {
@@ -110,6 +121,7 @@ const deleteRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const record = await record_1.default.findByIdAndDelete(recordId);
         if (!record)
             throw new Error("Record not found");
+        (0, activity_1.createActivity)("Record deleted", req.user._id);
         res.json({ message: "Record deleted" });
     }
     catch (error) {

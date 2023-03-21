@@ -22,6 +22,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -36,7 +47,10 @@ const user_1 = __importDefault(require("../models/user"));
 const sendMail_1 = require("../services/sendMail");
 const middleware_1 = require("../middleware");
 const permission_1 = __importDefault(require("../models/permission"));
+const activity_1 = require("./activity");
+const utils_1 = require("../utils");
 const privateKey = process.env.PRIVATE_KEY;
+const adminEmail = process.env.ADMIN_EMAIL;
 const generateToken = (id) => {
     return jsonwebtoken_1.default.sign({ _id: id }, privateKey, {
         expiresIn: 60 * 60 * 48,
@@ -50,9 +64,8 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
     let file = req.file;
     try {
         const userData = req.body;
-        userData.password = await hashingPassword(userData.password);
-        if (userData.password.length < 6)
-            throw new Error("Password must be up to 6 characters");
+        let password = (0, utils_1.generatePassword)();
+        userData.password = await hashingPassword(password);
         if (file) {
             let image = {
                 key: file.key,
@@ -61,9 +74,19 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
             };
             userData.image = image;
         }
+        if (adminEmail === userData.email) {
+            let newPermission = await permission_1.default.create({
+                name: "admin",
+                roles: ["read", "create", "edit", "delete"],
+            });
+            userData.permission = newPermission._id;
+        }
         const user = await user_1.default.create(userData);
-        const token = generateToken(user._id);
-        res.status(200).json({ _id: user._id, email: user.email, token });
+        await (0, sendMail_1.sendEmail)("User created", user.email, `your account has been created and your password is : <strong>${password}</strong>`);
+        if (req.user) {
+            (0, activity_1.createActivity)("New Staff created", req.user._id);
+        }
+        res.status(200).json({ message: "user created successfully" });
     }
     catch (error) {
         if (file) {
@@ -81,23 +104,27 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
     }
 });
 exports.createNewUser = createNewUser;
-async function loginUser(email, password) {
-    //were to use bycript an jsonwebtokek
-    const user = await user_1.default.findOne({ email });
+const loginUser = (0, express_async_handler_1.default)(async (req, res) => {
+    const { email, password } = req.body;
+    const user = (await user_1.default.findOne({ email }));
     if (!user) {
-        throw new Error("Wrong credentials please try again");
+        res.status(400).json({ error: "Wrong credentials please try again" });
     }
     else {
         const comparedPass = await bcrypt_1.default.compare(password, user.password);
         if (!comparedPass) {
-            throw new Error("Wrong credentials please try again");
+            res.status(400).json({ error: "Wrong credentials please try again" });
         }
         else {
             const token = generateToken(user._id);
-            return { _id: user._id, email: user.email, token };
+            if (user.permission) {
+                (0, activity_1.createActivity)(`${user.email} logged in`, user._id);
+            }
+            let _a = user._doc, { password } = _a, userData = __rest(_a, ["password"]);
+            res.status(200).json(Object.assign(Object.assign({}, userData), { token, permission: user.permission }));
         }
     }
-}
+});
 exports.loginUser = loginUser;
 const forgotPassword = (0, express_async_handler_1.default)(async (req, res) => {
     var _a, _b;
@@ -170,10 +197,11 @@ const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
             };
             updateData.image = image;
         }
-        let updatedUSer = await user_1.default.findByIdAndUpdate({ _id: id }, updateData, {
+        let updatedUser = await user_1.default.findByIdAndUpdate({ _id: id }, updateData, {
             new: true,
         });
-        res.status(200).json(updatedUSer);
+        (0, activity_1.createActivity)(`${updatedUser === null || updatedUser === void 0 ? void 0 : updatedUser.email} was updated`, req.user._id);
+        res.status(200).json(updatedUser);
     }
     catch (error) {
         if (file) {
@@ -191,6 +219,7 @@ const deleteUser = (0, express_async_handler_1.default)(async (req, res, next) =
             console.log(user.image.key);
             (0, middleware_1.s3DeleteImageHelper)(user.image.key);
         }
+        (0, activity_1.createActivity)(`${user === null || user === void 0 ? void 0 : user.email} was deleted`, req.user._id);
         res.status(200).json({
             data: null,
             message: "User has been deleted",

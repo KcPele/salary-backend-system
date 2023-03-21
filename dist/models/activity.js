@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const ActivitySchema = new mongoose_1.default.Schema({
     action: { type: String, required: true },
+    ip: { type: String, default: "login" },
     time: { type: Date },
     user: {
         type: mongoose_1.default.Schema.Types.ObjectId,

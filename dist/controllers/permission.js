@@ -6,9 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePermission = exports.updatePermission = exports.createPermission = exports.getAllPermission = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const permission_1 = __importDefault(require("../models/permission"));
+const activity_1 = require("./activity");
 const getAllPermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
-        const permissions = await permission_1.default.find();
+        const permissions = await permission_1.default.find().sort("-createdAt");
         res.status(200).json(permissions);
     }
     catch (error) {
@@ -29,6 +30,7 @@ const createPermission = (0, express_async_handler_1.default)(async (req, res) =
         }
         const newPermission = new permission_1.default({ name, roles });
         await newPermission.save();
+        (0, activity_1.createActivity)("New permission created", req.user._id);
         res.status(201).json(newPermission);
     }
     catch (error) {
@@ -45,12 +47,10 @@ const updatePermission = (0, express_async_handler_1.default)(async (req, res) =
                 throw new Error("Invalid roles array");
         }
         const updatedPermission = await permission_1.default.findByIdAndUpdate({ _id: req.params.permissionId }, { name, roles }, { new: true });
-        if (updatedPermission) {
-            res.status(200).json(updatedPermission);
-        }
-        else {
-            res.status(404).json({ message: "Permission not found" });
-        }
+        if (!updatedPermission)
+            throw new Error("Permission not found");
+        (0, activity_1.createActivity)(`${updatedPermission.name} permission updated`, req.user._id);
+        res.status(200).json(updatedPermission);
     }
     catch (error) {
         console.error(error);
@@ -61,12 +61,10 @@ exports.updatePermission = updatePermission;
 const deletePermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const deletedPermission = await permission_1.default.findByIdAndDelete(req.params.permissionId);
-        if (deletedPermission) {
-            res.status(204).send({ message: "Successfully deleted" });
-        }
-        else {
-            res.status(404).json({ message: "Permission not found" });
-        }
+        if (!deletedPermission)
+            throw new Error("Permission not found");
+        (0, activity_1.createActivity)(`${deletedPermission.name} permssion was deleted`, req.user._id);
+        res.status(204).send({ message: "Successfully deleted" });
     }
     catch (error) {
         console.error(error);

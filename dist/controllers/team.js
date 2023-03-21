@@ -7,6 +7,7 @@ exports.deleteTeamMember = exports.deleteTeam = exports.updateTeam = exports.get
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const team_1 = __importDefault(require("../models/team"));
 const user_1 = __importDefault(require("../models/user"));
+const activity_1 = require("./activity");
 const getAllTeams = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const teams = await team_1.default.find();
@@ -21,8 +22,14 @@ const getTeam = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const { teamId } = req.params;
         const teams = await team_1.default.findById(teamId)
-            .populate("lead")
-            .populate("members")
+            .populate({
+            path: "lead",
+            select: "_id email full_name image",
+        })
+            .populate({
+            path: "members",
+            select: "_id email full_name image",
+        })
             .exec();
         res.status(200).json(teams);
     }
@@ -35,8 +42,14 @@ const getTeamByLead = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const { leadId } = req.params;
         const teams = await team_1.default.find({ lead: leadId })
-            .populate("lead")
-            .populate("members")
+            .populate({
+            path: "lead",
+            select: "_id email full_name image",
+        })
+            .populate({
+            path: "members",
+            select: "_id email full_name image",
+        })
             .exec();
         res.status(200).json(teams);
     }
@@ -49,8 +62,14 @@ const getTeamByMember = (0, express_async_handler_1.default)(async (req, res) =>
     try {
         const { memberId } = req.params;
         const teams = await team_1.default.find({ members: memberId })
-            .populate("lead")
-            .populate("members")
+            .populate({
+            path: "lead",
+            select: "_id email full_name image",
+        })
+            .populate({
+            path: "members",
+            select: "_id email full_name image",
+        })
             .exec();
         res.status(200).json(teams);
     }
@@ -84,6 +103,7 @@ const createTeam = (0, express_async_handler_1.default)(async (req, res) => {
             members: membersId,
         });
         await team.save();
+        (0, activity_1.createActivity)("Team created", req.user._id);
         res.status(201).json(team);
     }
     catch (error) {
@@ -117,17 +137,21 @@ const updateTeam = (0, express_async_handler_1.default)(async (req, res) => {
             const members = await user_1.default.find({ _id: { $in: membersId } });
             if (members.length !== membersId.length)
                 throw new Error("Invalid member ID");
-        }
-        const newMembers = membersId.filter((member) => !teamUpdate.members.includes(member));
-        if (newMembers.length) {
-            teamUpdate.members.push(...newMembers);
-            await teamUpdate.save();
+            const newMembers = membersId.filter((member) => !teamUpdate.members.includes(member));
+            if (newMembers.length) {
+                teamUpdate.members.push(...newMembers);
+                await teamUpdate.save();
+            }
         }
         let updatedTeam = await team_1.default.findByIdAndUpdate({ _id: teamId }, {
             name,
             lead: leadId,
             about,
-        }, { new: true }).populate("lead");
+        }, { new: true }).populate({
+            path: "lead",
+            select: "_id email full_name image",
+        });
+        (0, activity_1.createActivity)(`Team ${updatedTeam === null || updatedTeam === void 0 ? void 0 : updatedTeam.name} was updated`, req.user._id);
         res.status(200).json(updatedTeam);
     }
     catch (error) {
@@ -153,6 +177,7 @@ const deleteTeamMember = (0, express_async_handler_1.default)(async (req, res) =
             throw new Error("Member not found");
         team.members.splice(memberIndex, 1);
         await team.save();
+        (0, activity_1.createActivity)(`A member from team ${team.name} was deleted`, req.user._id);
         res.status(200).json({ message: "Member deleted" });
     }
     catch (error) {
@@ -166,6 +191,7 @@ const deleteTeam = (0, express_async_handler_1.default)(async (req, res) => {
         const team = await team_1.default.findByIdAndDelete(teamId);
         if (!team)
             throw new Error("Team not found");
+        (0, activity_1.createActivity)(`Team ${team.name} was deleted`, req.user._id);
         res.status(200).json({ message: "Team deleted" });
     }
     catch (error) {
