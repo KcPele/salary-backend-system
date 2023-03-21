@@ -1,12 +1,16 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import ActivityModel from "../models/activity";
-import User from "../models/user";
 
 const getAllActivities = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const activitys = await ActivityModel.find().populate("user");
-    res.status(200).json(activitys);
+    const activities = await ActivityModel.find()
+      .populate({
+        path: "user",
+        select: "_id email full_name image",
+      })
+      .sort("-createdAt");
+    res.status(200).json(activities);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -16,7 +20,10 @@ const getActivity = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { activityId } = req.params;
     const activity = await ActivityModel.findById(activityId)
-      .populate("user")
+      .populate({
+        path: "user",
+        select: "_id email full_name image",
+      })
       .exec();
     res.status(200).json(activity);
   } catch (error: any) {
@@ -28,7 +35,10 @@ const getUserActivity = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const activity = await ActivityModel.find({ user: userId })
-      .populate("user")
+      .populate({
+        path: "user",
+        select: "_id email full_name image",
+      })
       .exec();
     res.status(200).json(activity);
   } catch (error: any) {

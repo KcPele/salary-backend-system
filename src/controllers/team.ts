@@ -18,8 +18,14 @@ const getTeam = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const teams = await TeamModel.findById(teamId)
-      .populate("lead")
-      .populate("members")
+      .populate({
+        path: "lead",
+        select: "_id email full_name image",
+      })
+      .populate({
+        path: "members",
+        select: "_id email full_name image",
+      })
       .exec();
     res.status(200).json(teams);
   } catch (error: any) {
@@ -31,8 +37,14 @@ const getTeamByLead = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { leadId } = req.params;
     const teams = await TeamModel.find({ lead: leadId })
-      .populate("lead")
-      .populate("members")
+      .populate({
+        path: "lead",
+        select: "_id email full_name image",
+      })
+      .populate({
+        path: "members",
+        select: "_id email full_name image",
+      })
       .exec();
     res.status(200).json(teams);
   } catch (error: any) {
@@ -44,8 +56,14 @@ const getTeamByMember = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { memberId } = req.params;
     const teams = await TeamModel.find({ members: memberId })
-      .populate("lead")
-      .populate("members")
+      .populate({
+        path: "lead",
+        select: "_id email full_name image",
+      })
+      .populate({
+        path: "members",
+        select: "_id email full_name image",
+      })
       .exec();
     res.status(200).json(teams);
   } catch (error: any) {

@@ -4,11 +4,12 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User, { IUser } from "../models/user";
+import User, { IUser, IUserCreated } from "../models/user";
 import { sendEmail } from "../services/sendMail";
 import { s3DeleteImageHelper } from "../middleware";
 import PermissionModel from "../models/permission";
 import { createActivity } from "./activity";
+import { Document } from "mongoose";
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
 const generateToken = (id: any): string => {
@@ -81,10 +82,15 @@ const createNewUser = asyncHandler(
   }
 );
 
+interface IUserDocument extends Document<IUserCreated>, IUserCreated {
+  _doc: any;
+  _id: any;
+}
+
 const loginUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = (await User.findOne({ email })) as IUserDocument;
     if (!user) {
       res.status(400).json({ error: "Wrong credentials please try again" });
     } else {
@@ -96,9 +102,9 @@ const loginUser = asyncHandler(
         if (user.permission) {
           createActivity(`${user.email} logged in`, user._id);
         }
+        let { password, ...userData } = user._doc;
         res.status(200).json({
-          _id: user._id,
-          email: user.email,
+          ...userData,
           token,
           permission: user.permission,
         });

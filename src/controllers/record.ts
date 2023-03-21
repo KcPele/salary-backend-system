@@ -6,7 +6,12 @@ import { createActivity } from "./activity";
 const getAllRecords = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const records = await RecordModel.find().populate("user").exec();
+      const records = await RecordModel.find()
+      .populate({
+        path: "user",
+        select: "_id email full_name image",
+      })
+      .exec();
       res.json(records);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -19,7 +24,10 @@ const getRecord = asyncHandler(
     try {
       const { recordId } = req.params;
       const record = await RecordModel.findById(recordId)
-        .populate("user")
+      .populate({
+        path: "user",
+        select: "_id email full_name image",
+      })
         .exec();
       if (!record) throw new Error("Record not found");
       res.json(record);

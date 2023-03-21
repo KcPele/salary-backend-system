@@ -1,7 +1,5 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import User from "../models/user";
 import { permissionMiddleware, tokenMiddleware, upload } from "../middleware";
 import {
@@ -12,13 +10,13 @@ import {
   resetPassword,
   updateUser,
 } from "../controllers/user";
-const privateKey = process.env.PRIVATE_KEY;
+
 const router = express.Router();
 
 router.get(
   "/",
   asyncHandler(async (req: express.Request, res: express.Response) => {
-    const users = await User.find({}).select("-password");
+    const users = await User.find({}).select("-password").sort("-createdAt");
     res.status(200).json(users);
   })
 );
@@ -42,6 +40,8 @@ router.post(
   upload.single("file"),
   createNewUser
 );
+
+//creating admin once.
 router.post("/register/lorchain-admin", upload.single("file"), createNewUser);
 
 router.post("/forgot-password", tokenMiddleware, forgotPassword);
