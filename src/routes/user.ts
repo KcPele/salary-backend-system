@@ -42,7 +42,7 @@ router.post(
 );
 
 //creating admin once.
-router.post("/register/lorchain-admin", upload.single("file"), createNewUser);
+router.post("/register/chainlor-inmda", upload.single("file"), createNewUser);
 
 router.post("/forgot-password", tokenMiddleware, forgotPassword);
 

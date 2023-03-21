@@ -127,14 +127,13 @@ const updateTeam = asyncHandler(async (req: Request, res: Response) => {
       const members = await User.find({ _id: { $in: membersId } });
       if (members.length !== membersId.length)
         throw new Error("Invalid member ID");
-    }
-
-    const newMembers = membersId.filter(
-      (member: any) => !teamUpdate.members.includes(member)
-    );
-    if (newMembers.length) {
-      teamUpdate.members.push(...newMembers);
-      await teamUpdate.save();
+      const newMembers = membersId.filter(
+        (member: any) => !teamUpdate.members.includes(member)
+      );
+      if (newMembers.length) {
+        teamUpdate.members.push(...newMembers);
+        await teamUpdate.save();
+      }
     }
 
     let updatedTeam = await TeamModel.findByIdAndUpdate(
@@ -145,7 +144,10 @@ const updateTeam = asyncHandler(async (req: Request, res: Response) => {
         about,
       },
       { new: true }
-    ).populate("lead");
+    ).populate({
+      path: "lead",
+      select: "_id email full_name image",
+    });
     createActivity(`Team ${updatedTeam?.name} was updated`, req.user._id);
 
     res.status(200).json(updatedTeam);
@@ -169,10 +171,7 @@ const deleteTeamMember = asyncHandler(async (req: Request, res: Response) => {
     if (memberIndex === -1) throw new Error("Member not found");
     team.members.splice(memberIndex, 1);
     await team.save();
-    createActivity(
-      `A memeber from team ${team.name} was deleted`,
-      req.user._id
-    );
+    createActivity(`A member from team ${team.name} was deleted`, req.user._id);
     res.status(200).json({ message: "Member deleted" });
   } catch (error: any) {
     res.status(500).json({ message: error.message });

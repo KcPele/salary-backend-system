@@ -6,7 +6,9 @@ import { createActivity } from "./activity";
 
 const getAllPermission = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const permissions: IPermission[] = await PermissionModel.find();
+    const permissions: IPermission[] = await PermissionModel.find().sort(
+      "-createdAt"
+    );
     res.status(200).json(permissions);
   } catch (error) {
     console.error(error);

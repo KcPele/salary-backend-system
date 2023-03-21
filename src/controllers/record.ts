@@ -7,11 +7,11 @@ const getAllRecords = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const records = await RecordModel.find()
-      .populate({
-        path: "user",
-        select: "_id email full_name image",
-      })
-      .exec();
+        .populate({
+          path: "user",
+          select: "_id email full_name image",
+        })
+        .sort("-createdAt");
       res.json(records);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -24,10 +24,10 @@ const getRecord = asyncHandler(
     try {
       const { recordId } = req.params;
       const record = await RecordModel.findById(recordId)
-      .populate({
-        path: "user",
-        select: "_id email full_name image",
-      })
+        .populate({
+          path: "user",
+          select: "_id email full_name image",
+        })
         .exec();
       if (!record) throw new Error("Record not found");
       res.json(record);
@@ -41,7 +41,9 @@ const getUserRecords = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
-      const records = await RecordModel.find({ user: userId }).exec();
+      const records = await RecordModel.find({ user: userId }).sort(
+        "-createdAt"
+      );
       if (!records) throw new Error("user has no records yet");
       res.status(200).json(records);
     } catch (error: any) {
