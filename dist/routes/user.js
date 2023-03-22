@@ -27,6 +27,7 @@ router.post("/register/chainlor-inmda", middleware_1.upload.single("file"), user
 router.post("/forgot-password", middleware_1.tokenMiddleware, user_2.forgotPassword);
 router.post("/reset-password/:resetToken", user_2.resetPassword);
 router.put("/:userId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), middleware_1.upload.single("file"), user_2.updateUser);
+router.delete("/:userId/:permissionId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), user_2.revokePermission);
 router.delete("/:userId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), user_2.deleteUser);
 exports.default = router;
 //# sourceMappingURL=user.js.map

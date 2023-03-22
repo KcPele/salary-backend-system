@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const RecordSchema = new mongoose_1.default.Schema({
     address: { type: String, required: true },
+    remark: { type: String },
     is_paid: { type: Boolean, default: false },
     salary: { type: Number, required: true },
     transaction_url: { type: String },

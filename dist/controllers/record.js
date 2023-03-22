@@ -57,7 +57,7 @@ exports.getUserRecords = getUserRecords;
 const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         // Extract data from request body
-        const { userId, address, is_paid, salary, transaction_url, payment_date, } = req.body;
+        const { userId, address, remark, is_paid, salary, transaction_url, payment_date, } = req.body;
         // Validate required fields
         if (!userId || !address || !salary || !transaction_url || !payment_date) {
             throw new Error("Please provide all required fields");
@@ -70,6 +70,7 @@ const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const record = new record_1.default({
             user: userId,
             address,
+            remark,
             is_paid,
             salary,
             transaction_url,
@@ -87,9 +88,10 @@ const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
 });
 exports.createRecord = createRecord;
 const updateRecord = (0, express_async_handler_1.default)(async (req, res) => {
-    const { address, is_paid, salary, transaction_url, payment_date, userId } = req.body;
+    const { address, remark, is_paid, salary, transaction_url, payment_date, userId } = req.body;
     const recordData = {
         address,
+        remark,
         is_paid,
         salary,
         transaction_url,

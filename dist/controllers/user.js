@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.forgotPassword = exports.deleteUser = exports.loginUser = exports.updateUser = exports.createNewUser = void 0;
+exports.resetPassword = exports.forgotPassword = exports.revokePermission = exports.deleteUser = exports.loginUser = exports.updateUser = exports.createNewUser = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
@@ -211,6 +211,31 @@ const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
     }
 });
 exports.updateUser = updateUser;
+const revokePermission = (0, express_async_handler_1.default)(async (req, res) => {
+    var _a, _b;
+    let userId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.userId;
+    let permissionId = (_b = req.params) === null || _b === void 0 ? void 0 : _b.permissionId;
+    try {
+        const user = await user_1.default.findById(userId);
+        if (!user)
+            throw new Error("user not found");
+        const permission = permission_1.default.findById(permissionId);
+        if (!permission)
+            throw new Error("perssmission does not exist");
+        let updateData = {
+            permission: null,
+        };
+        let updatedUser = await user_1.default.findByIdAndUpdate({ _id: userId }, updateData, {
+            new: true,
+        });
+        (0, activity_1.createActivity)(`${updatedUser === null || updatedUser === void 0 ? void 0 : updatedUser.email} permssion was revoked`, req.user._id);
+        res.status(200).json(updatedUser);
+    }
+    catch (error) {
+        res.status(500).json({ errors: error.message });
+    }
+});
+exports.revokePermission = revokePermission;
 const deleteUser = (0, express_async_handler_1.default)(async (req, res, next) => {
     try {
         const userId = req.params.userId;
