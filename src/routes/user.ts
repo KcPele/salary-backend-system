@@ -8,6 +8,7 @@ import {
   forgotPassword,
   loginUser,
   resetPassword,
+  revokePermission,
   updateUser,
 } from "../controllers/user";
 
@@ -54,6 +55,13 @@ router.put(
   permissionMiddleware(["edit"]),
   upload.single("file"),
   updateUser
+);
+
+router.delete(
+  "/:userId/:permissionId",
+  tokenMiddleware,
+  permissionMiddleware(["edit"]),
+  revokePermission
 );
 router.delete(
   "/:userId",

@@ -23,7 +23,7 @@ export interface IUser {
   address: string;
   phone_number: string;
   team: Types.ObjectId | ITeam;
-  permission: Types.ObjectId | IPermission;
+  permission: Types.ObjectId | IPermission | null;
 }
 
 export interface IUserCreated extends IUser {

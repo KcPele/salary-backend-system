@@ -3,6 +3,7 @@ import { IUser } from "./user";
 
 export interface IRecord extends Document {
   address: string;
+  remark: string;
   is_paid: boolean;
   salary: number;
   transaction_url: string;
@@ -15,6 +16,7 @@ interface IRecordModel extends Model<IRecord> {}
 const RecordSchema = new mongoose.Schema<IRecord, IRecordModel>(
   {
     address: { type: String, required: true },
+    remark: { type: String },
     is_paid: { type: Boolean, default: false },
     salary: { type: Number, required: true },
     transaction_url: { type: String },

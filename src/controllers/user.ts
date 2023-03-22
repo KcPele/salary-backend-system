@@ -204,6 +204,38 @@ const updateUser = asyncHandler(
   }
 );
 
+const revokePermission = asyncHandler(
+  async (req: express.Request, res: express.Response) => {
+    let userId = req.params?.userId;
+    let permissionId = req.params?.permissionId;
+    try {
+      const user = await User.findById(userId);
+      if (!user) throw new Error("user not found");
+
+      const permission = PermissionModel.findById(permissionId);
+      if (!permission) throw new Error("perssmission does not exist");
+      let updateData = {
+        permission: null,
+      };
+
+      let updatedUser = await User.findByIdAndUpdate(
+        { _id: userId },
+        updateData,
+        {
+          new: true,
+        }
+      );
+      createActivity(
+        `${updatedUser?.email} permssion was revoked`,
+        req.user._id
+      );
+      res.status(200).json(updatedUser);
+    } catch (error: any) {
+      res.status(500).json({ errors: error.message });
+    }
+  }
+);
+
 const deleteUser = asyncHandler(
   async (
     req: express.Request,
@@ -232,6 +264,7 @@ export {
   updateUser,
   loginUser,
   deleteUser,
+  revokePermission,
   forgotPassword,
   resetPassword,
 };

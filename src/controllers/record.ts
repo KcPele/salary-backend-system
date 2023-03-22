@@ -59,6 +59,7 @@ const createRecord = asyncHandler(
       const {
         userId,
         address,
+        remark,
         is_paid,
         salary,
         transaction_url,
@@ -78,6 +79,7 @@ const createRecord = asyncHandler(
       const record = new RecordModel({
         user: userId,
         address,
+        remark,
         is_paid,
         salary,
         transaction_url,
@@ -97,10 +99,11 @@ const createRecord = asyncHandler(
 
 const updateRecord = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { address, is_paid, salary, transaction_url, payment_date, userId } =
+    const { address, remark, is_paid, salary, transaction_url, payment_date, userId } =
       req.body;
     const recordData: Partial<IRecord> = {
       address,
+      remark,
       is_paid,
       salary,
       transaction_url,
