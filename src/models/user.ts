@@ -8,6 +8,7 @@ import { ITeam } from "./team";
 
 export interface IUser {
   email: string;
+  last_login: Date;
   password: string;
   image: {
     key: string;
@@ -45,6 +46,7 @@ const schema = new Schema<IUser, UserModel>(
       unique: true,
       validate: [validation.isEmail, "invalid email"],
     },
+    last_login: { type: Date, default: Date.now },
     password: { type: String, required: true },
     image: {
       key: { type: String },

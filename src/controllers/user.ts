@@ -95,6 +95,10 @@ const loginUser = asyncHandler(
         if (user.permission) {
           createActivity(`${user.email} logged in`, user._id);
         }
+        await User.findByIdAndUpdate(
+          { _id: user._id },
+          { last_login: Date.now() }
+        );
         let { password, ...userData } = user._doc;
         res.status(200).json({
           ...userData,

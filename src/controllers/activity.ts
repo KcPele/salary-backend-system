@@ -7,7 +7,7 @@ const getAllActivities = asyncHandler(async (req: Request, res: Response) => {
     const activities = await ActivityModel.find()
       .populate({
         path: "user",
-        select: "_id email full_name image",
+        select: " email full_name image",
       })
       .sort("-createdAt");
     res.status(200).json(activities);
@@ -22,7 +22,10 @@ const getActivity = asyncHandler(async (req: Request, res: Response) => {
     const activity = await ActivityModel.findById(activityId)
       .populate({
         path: "user",
-        select: "_id email full_name image",
+        select: " email full_name image job_role",
+        populate: {
+          path: "permission",
+        },
       })
       .exec();
     res.status(200).json(activity);
@@ -37,7 +40,10 @@ const getUserActivity = asyncHandler(async (req: Request, res: Response) => {
     const activity = await ActivityModel.find({ user: userId })
       .populate({
         path: "user",
-        select: "_id email full_name image",
+        select: "email full_name image job_role",
+        populate: {
+          path: "permission",
+        },
       })
       .exec();
     res.status(200).json(activity);
