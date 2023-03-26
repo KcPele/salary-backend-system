@@ -75,7 +75,7 @@ const createNewUser = asyncHandler(
   }
 );
 
-interface IUserDocument extends Document<IUserCreated>, IUserCreated {
+interface IUserDocument extends IUserCreated {
   _doc: any;
   _id: any;
 }

@@ -11,7 +11,7 @@ const getAllActivities = (0, express_async_handler_1.default)(async (req, res) =
         const activities = await activity_1.default.find()
             .populate({
             path: "user",
-            select: "_id email full_name image",
+            select: " email full_name image",
         })
             .sort("-createdAt");
         res.status(200).json(activities);
@@ -27,7 +27,10 @@ const getActivity = (0, express_async_handler_1.default)(async (req, res) => {
         const activity = await activity_1.default.findById(activityId)
             .populate({
             path: "user",
-            select: "_id email full_name image",
+            select: " email full_name image job_role",
+            populate: {
+                path: "permission",
+            },
         })
             .exec();
         res.status(200).json(activity);
@@ -43,7 +46,10 @@ const getUserActivity = (0, express_async_handler_1.default)(async (req, res) =>
         const activity = await activity_1.default.find({ user: userId })
             .populate({
             path: "user",
-            select: "_id email full_name image",
+            select: "email full_name image job_role",
+            populate: {
+                path: "permission",
+            },
         })
             .exec();
         res.status(200).json(activity);

@@ -14,6 +14,7 @@ const schema = new mongoose_1.Schema({
         unique: true,
         validate: [validator_1.default.isEmail, "invalid email"],
     },
+    last_login: { type: Date, default: Date.now },
     password: { type: String, required: true },
     image: {
         key: { type: String },

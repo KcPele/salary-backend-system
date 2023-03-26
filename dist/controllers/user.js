@@ -120,6 +120,7 @@ const loginUser = (0, express_async_handler_1.default)(async (req, res) => {
             if (user.permission) {
                 (0, activity_1.createActivity)(`${user.email} logged in`, user._id);
             }
+            await user_1.default.findByIdAndUpdate({ _id: user._id }, { last_login: Date.now() });
             let _a = user._doc, { password } = _a, userData = __rest(_a, ["password"]);
             res.status(200).json(Object.assign(Object.assign({}, userData), { token, permission: user.permission }));
         }

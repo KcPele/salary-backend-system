@@ -1,12 +1,19 @@
 // import * as dotenv from "dotenv";
 import validation from "validator";
 // dotenv.config();
-import { Model, Schema, HydratedDocument, model, Types } from "mongoose";
+import {
+  Model,
+  Schema,
+  HydratedDocument,
+  model,
+  Types,
+  Document,
+} from "mongoose";
 import { createNewUser, loginUser } from "../controllers/user";
 import { IPermission } from "./permission";
 import { ITeam } from "./team";
 
-export interface IUser {
+export interface IUser extends Document {
   email: string;
   last_login: Date;
   password: string;

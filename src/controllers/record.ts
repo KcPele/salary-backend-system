@@ -55,7 +55,7 @@ const getAllRecords = asyncHandler(
 
       let totalRecords = records.map((record) => {
         const userTotalSalary = totalSalaryByUser.find(
-          (total) => total.userId.toString() === record.user?._id.toString()
+          (total) => total.userId.toString() === record.user._id.toString()
         )?.totalSalary;
 
         return {

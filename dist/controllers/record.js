@@ -7,16 +7,50 @@ exports.getRecord = exports.getUserRecords = exports.updateRecord = exports.dele
 const record_1 = __importDefault(require("../models/record"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const user_1 = __importDefault(require("../models/user"));
+const mongodb_1 = require("mongodb");
 const activity_1 = require("./activity");
+const getTotalSalaryByUser = async () => {
+    const result = await record_1.default.aggregate([
+        {
+            $group: {
+                _id: "$user",
+                totalSalary: { $sum: "$salary" },
+            },
+        },
+    ]);
+    return result.map((record) => ({
+        userId: record._id,
+        totalSalary: record.totalSalary,
+    }));
+};
+const getTotalSalary = async () => {
+    const result = await record_1.default.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalSalary: { $sum: "$salary" },
+            },
+        },
+    ]);
+    return result.length > 0 ? result[0].totalSalary : 0;
+};
 const getAllRecords = (0, express_async_handler_1.default)(async (req, res) => {
     try {
+        const totalSalaryByUser = await getTotalSalaryByUser();
+        const totalSalary = await getTotalSalary();
         const records = await record_1.default.find()
             .populate({
             path: "user",
             select: "_id email full_name image",
         })
-            .sort("-createdAt");
-        res.json(records);
+            .sort("-createdAt")
+            .lean();
+        let totalRecords = records.map((record) => {
+            var _a;
+            const userTotalSalary = (_a = totalSalaryByUser.find((total) => total.userId.toString() === record.user._id.toString())) === null || _a === void 0 ? void 0 : _a.totalSalary;
+            return Object.assign(Object.assign({}, record), { userTotalSalary: userTotalSalary !== null && userTotalSalary !== void 0 ? userTotalSalary : 0 });
+        });
+        res.status(200).json({ records: totalRecords, totalSalary });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -47,7 +81,19 @@ const getUserRecords = (0, express_async_handler_1.default)(async (req, res) => 
         const records = await record_1.default.find({ user: userId }).sort("-createdAt");
         if (!records)
             throw new Error("user has no records yet");
-        res.status(200).json(records);
+        const totalUserSalary = await record_1.default.aggregate([
+            { $match: { user: new mongodb_1.ObjectId(userId) } },
+            {
+                $group: {
+                    _id: null,
+                    total_user_salary: { $sum: "$salary" },
+                },
+            },
+        ]);
+        res.status(200).json({
+            records,
+            totalUserSalary: totalUserSalary[0].total_user_salary,
+        });
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -88,7 +134,7 @@ const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
 });
 exports.createRecord = createRecord;
 const updateRecord = (0, express_async_handler_1.default)(async (req, res) => {
-    const { address, remark, is_paid, salary, transaction_url, payment_date, userId } = req.body;
+    const { address, remark, is_paid, salary, transaction_url, payment_date, userId, } = req.body;
     const recordData = {
         address,
         remark,
