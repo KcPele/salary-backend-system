@@ -6,6 +6,7 @@ export interface IRecord extends Document {
   remark: string;
   is_paid: boolean;
   salary: number;
+  tax: number;
   transaction_url: string;
   payment_date: Date;
   user: Types.ObjectId | IUser;
@@ -19,6 +20,7 @@ const RecordSchema = new mongoose.Schema<IRecord, IRecordModel>(
     remark: { type: String },
     is_paid: { type: Boolean, default: false },
     salary: { type: Number, required: true },
+    tax: { type: Number },
     transaction_url: { type: String },
     payment_date: { type: Date },
     user: {

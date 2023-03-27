@@ -11,6 +11,7 @@ import PermissionModel from "../models/permission";
 import { createActivity } from "./activity";
 import { Document } from "mongoose";
 import { generatePassword } from "../utils";
+import TeamModel from "../models/team";
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
 const generateToken = (id: any): string => {
@@ -39,6 +40,12 @@ const createNewUser = asyncHandler(
           name: file.originalname,
         };
         userData.image = image;
+      }
+      if (userData.team) {
+        let team = TeamModel.findById(userData.team);
+        if (!team) {
+          throw new Error("Team not found");
+        }
       }
 
       if (adminEmail === userData.email) {
@@ -181,6 +188,12 @@ const updateUser = asyncHandler(
       if (updateData.permission) {
         const permission = PermissionModel.findById(updateData.permission);
         if (!permission) throw new Error("perssmission does not exist");
+      }
+      if (updateData.team) {
+        let team = TeamModel.findById(updateData.team);
+        if (!team) {
+          throw new Error("Team not found");
+        }
       }
       if (file) {
         if (user.image.key) {

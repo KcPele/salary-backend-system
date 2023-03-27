@@ -49,6 +49,7 @@ const middleware_1 = require("../middleware");
 const permission_1 = __importDefault(require("../models/permission"));
 const activity_1 = require("./activity");
 const utils_1 = require("../utils");
+const team_1 = __importDefault(require("../models/team"));
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
 const generateToken = (id) => {
@@ -73,6 +74,12 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
                 name: file.originalname,
             };
             userData.image = image;
+        }
+        if (userData.team) {
+            let team = team_1.default.findById(userData.team);
+            if (!team) {
+                throw new Error("Team not found");
+            }
         }
         if (adminEmail === userData.email) {
             let newPermission = await permission_1.default.create({
@@ -186,6 +193,12 @@ const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
             const permission = permission_1.default.findById(updateData.permission);
             if (!permission)
                 throw new Error("perssmission does not exist");
+        }
+        if (updateData.team) {
+            let team = team_1.default.findById(updateData.team);
+            if (!team) {
+                throw new Error("Team not found");
+            }
         }
         if (file) {
             if (user.image.key) {

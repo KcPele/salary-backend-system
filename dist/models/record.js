@@ -9,6 +9,7 @@ const RecordSchema = new mongoose_1.default.Schema({
     remark: { type: String },
     is_paid: { type: Boolean, default: false },
     salary: { type: Number, required: true },
+    tax: { type: Number },
     transaction_url: { type: String },
     payment_date: { type: Date },
     user: {

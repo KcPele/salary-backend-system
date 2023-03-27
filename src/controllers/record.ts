@@ -9,6 +9,7 @@ const getTotalSalaryByUser = async (): Promise<
   {
     userId: string;
     totalSalary: number;
+    totalTax: number;
   }[]
 > => {
   const result = await RecordModel.aggregate([
@@ -16,6 +17,7 @@ const getTotalSalaryByUser = async (): Promise<
       $group: {
         _id: "$user",
         totalSalary: { $sum: "$salary" },
+        totalTax: { $sum: "$tax" },
       },
     },
   ]);
@@ -23,20 +25,24 @@ const getTotalSalaryByUser = async (): Promise<
   return result.map((record) => ({
     userId: record._id,
     totalSalary: record.totalSalary,
+    totalTax: record.totalTax,
   }));
 };
 
-const getTotalSalary = async (): Promise<number> => {
+const getTotalSalary = async (): Promise<{}> => {
   const result = await RecordModel.aggregate([
     {
       $group: {
         _id: null,
         totalSalary: { $sum: "$salary" },
+        totalTax: { $sum: "$tax" },
       },
     },
   ]);
 
-  return result.length > 0 ? result[0].totalSalary : 0;
+  return result.length > 0
+    ? { totalTax: result[0].totalTax, totalSalary: result[0].totalSalary }
+    : { totalTax: 0, totalSalary: 0 };
 };
 
 const getAllRecords = asyncHandler(
@@ -44,11 +50,11 @@ const getAllRecords = asyncHandler(
     try {
       const totalSalaryByUser = await getTotalSalaryByUser();
 
-      const totalSalary = await getTotalSalary();
+      const total = await getTotalSalary();
       const records = await RecordModel.find()
         .populate({
           path: "user",
-          select: "_id email full_name image",
+          select: "_id email full_name image job_role",
         })
         .sort("-createdAt")
         .lean();
@@ -57,13 +63,17 @@ const getAllRecords = asyncHandler(
         const userTotalSalary = totalSalaryByUser.find(
           (total) => total.userId.toString() === record.user._id.toString()
         )?.totalSalary;
+        const userTotalTax = totalSalaryByUser.find(
+          (total) => total.userId.toString() === record.user._id.toString()
+        )?.totalTax;
 
         return {
           ...record,
           userTotalSalary: userTotalSalary ?? 0,
+          userTotalTax: userTotalTax ?? 0,
         };
       });
-      res.status(200).json({ records: totalRecords, totalSalary });
+      res.status(200).json({ records: totalRecords, ...total });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -77,7 +87,7 @@ const getRecord = asyncHandler(
       const record = await RecordModel.findById(recordId)
         .populate({
           path: "user",
-          select: "_id email full_name image",
+          select: "_id email full_name image job_role",
         })
         .exec();
       if (!record) throw new Error("Record not found");
@@ -138,6 +148,10 @@ const createRecord = asyncHandler(
       // Check if user exists
       const user = await User.findById(userId);
       if (!user) throw new Error("Invalid user ID");
+      let tax = 0;
+      if (user.tax_rate) {
+        tax = (user.tax_rate / 100) * salary;
+      }
 
       // Create new record
       const record = new RecordModel({
@@ -146,6 +160,7 @@ const createRecord = asyncHandler(
         remark,
         is_paid,
         salary,
+        tax,
         transaction_url,
         payment_date,
       });
@@ -184,9 +199,13 @@ const updateRecord = asyncHandler(
       // Check if user exists
       const user = await User.findById(userId);
       if (!user) throw new Error("Invalid user ID");
+      if (user.tax_rate && salary) {
+        recordData.tax = (user.tax_rate / 100) * salary;
+      }
       recordData.user = userId;
     }
     const { recordId } = req.params;
+
     try {
       const record = await RecordModel.findByIdAndUpdate(
         { _id: recordId },

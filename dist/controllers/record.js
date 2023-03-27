@@ -15,12 +15,14 @@ const getTotalSalaryByUser = async () => {
             $group: {
                 _id: "$user",
                 totalSalary: { $sum: "$salary" },
+                totalTax: { $sum: "$tax" },
             },
         },
     ]);
     return result.map((record) => ({
         userId: record._id,
         totalSalary: record.totalSalary,
+        totalTax: record.totalTax,
     }));
 };
 const getTotalSalary = async () => {
@@ -29,28 +31,32 @@ const getTotalSalary = async () => {
             $group: {
                 _id: null,
                 totalSalary: { $sum: "$salary" },
+                totalTax: { $sum: "$tax" },
             },
         },
     ]);
-    return result.length > 0 ? result[0].totalSalary : 0;
+    return result.length > 0
+        ? { totalTax: result[0].totalTax, totalSalary: result[0].totalSalary }
+        : { totalTax: 0, totalSalary: 0 };
 };
 const getAllRecords = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const totalSalaryByUser = await getTotalSalaryByUser();
-        const totalSalary = await getTotalSalary();
+        const total = await getTotalSalary();
         const records = await record_1.default.find()
             .populate({
             path: "user",
-            select: "_id email full_name image",
+            select: "_id email full_name image job_role",
         })
             .sort("-createdAt")
             .lean();
         let totalRecords = records.map((record) => {
-            var _a;
+            var _a, _b;
             const userTotalSalary = (_a = totalSalaryByUser.find((total) => total.userId.toString() === record.user._id.toString())) === null || _a === void 0 ? void 0 : _a.totalSalary;
-            return Object.assign(Object.assign({}, record), { userTotalSalary: userTotalSalary !== null && userTotalSalary !== void 0 ? userTotalSalary : 0 });
+            const userTotalTax = (_b = totalSalaryByUser.find((total) => total.userId.toString() === record.user._id.toString())) === null || _b === void 0 ? void 0 : _b.totalTax;
+            return Object.assign(Object.assign({}, record), { userTotalSalary: userTotalSalary !== null && userTotalSalary !== void 0 ? userTotalSalary : 0, userTotalTax: userTotalTax !== null && userTotalTax !== void 0 ? userTotalTax : 0 });
         });
-        res.status(200).json({ records: totalRecords, totalSalary });
+        res.status(200).json(Object.assign({ records: totalRecords }, total));
     }
     catch (error) {
         res.status(500).json({ message: error.message });
@@ -63,7 +69,7 @@ const getRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const record = await record_1.default.findById(recordId)
             .populate({
             path: "user",
-            select: "_id email full_name image",
+            select: "_id email full_name image job_role",
         })
             .exec();
         if (!record)
@@ -112,6 +118,10 @@ const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const user = await user_1.default.findById(userId);
         if (!user)
             throw new Error("Invalid user ID");
+        let tax = 0;
+        if (user.tax_rate) {
+            tax = (user.tax_rate / 100) * salary;
+        }
         // Create new record
         const record = new record_1.default({
             user: userId,
@@ -119,6 +129,7 @@ const createRecord = (0, express_async_handler_1.default)(async (req, res) => {
             remark,
             is_paid,
             salary,
+            tax,
             transaction_url,
             payment_date,
         });
@@ -148,6 +159,9 @@ const updateRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const user = await user_1.default.findById(userId);
         if (!user)
             throw new Error("Invalid user ID");
+        if (user.tax_rate && salary) {
+            recordData.tax = (user.tax_rate / 100) * salary;
+        }
         recordData.user = userId;
     }
     const { recordId } = req.params;
