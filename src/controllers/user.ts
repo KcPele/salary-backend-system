@@ -9,22 +9,24 @@ import { sendEmail } from "../services/sendMail";
 import { s3DeleteImageHelper } from "../middleware";
 import PermissionModel from "../models/permission";
 import { createActivity } from "./activity";
-import { Document } from "mongoose";
 import { generatePassword } from "../utils";
 import TeamModel from "../models/team";
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
+
+//generating token
 const generateToken = (id: any): string => {
   return jwt.sign({ _id: id }, privateKey as string, {
     expiresIn: 60 * 60 * 48,
   });
 };
-
+//hashing password
 const hashingPassword = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
 
+//create new users
 const createNewUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     let file = req.file as any;
@@ -47,7 +49,7 @@ const createNewUser = asyncHandler(
           throw new Error("Team not found");
         }
       }
-
+      //checkand for admin role and creating one if it does not exist
       if (adminEmail === userData.email) {
         let newPermission = await PermissionModel.create({
           name: "admin",
@@ -57,6 +59,7 @@ const createNewUser = asyncHandler(
       }
 
       const user = await User.create(userData);
+      // send email to user that was just created with his or her password
       await sendEmail(
         "User created",
         user.email,
@@ -176,6 +179,7 @@ const resetPassword = asyncHandler(
   }
 );
 
+//updating user
 const updateUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     let file = req.file as any;
@@ -209,7 +213,7 @@ const updateUser = asyncHandler(
 
       let updatedUser = await User.findByIdAndUpdate({ _id: id }, updateData, {
         new: true,
-      });
+      }).select("-password");
       createActivity(`${updatedUser?.email} was updated`, req.user._id);
       res.status(200).json(updatedUser);
     } catch (error: any) {
@@ -221,6 +225,7 @@ const updateUser = asyncHandler(
   }
 );
 
+//revoking users permission
 const revokePermission = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     let userId = req.params?.userId;
@@ -253,6 +258,7 @@ const revokePermission = asyncHandler(
   }
 );
 
+//delete users
 const deleteUser = asyncHandler(
   async (
     req: express.Request,

@@ -29,6 +29,7 @@ export interface IUser extends Document {
   job_role: string;
   start_date: Date;
   end_date: Date;
+  wallet_address: string;
   tax_rate: number;
   address: string;
   phone_number: string;
@@ -66,11 +67,12 @@ const schema = new Schema<IUser, UserModel>(
     gender: { type: String },
     natioanlity: { type: String },
     job_role: { type: String },
-    salary: { type: Number },
+    salary: { type: Number, default: 0 },
     tax_rate: { type: Number },
     start_date: { type: Date, default: Date.now },
     end_date: { type: Date, default: null },
     address: { type: String },
+    wallet_address: { type: String },
     phone_number: { type: String },
     team: { type: Schema.Types.ObjectId, ref: "Team" },
     permission: { type: Schema.Types.ObjectId, ref: "Permission" },

@@ -52,15 +52,18 @@ const utils_1 = require("../utils");
 const team_1 = __importDefault(require("../models/team"));
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
+//generating token
 const generateToken = (id) => {
     return jsonwebtoken_1.default.sign({ _id: id }, privateKey, {
         expiresIn: 60 * 60 * 48,
     });
 };
+//hashing password
 const hashingPassword = async (password) => {
     const salt = await bcrypt_1.default.genSalt(10);
     return await bcrypt_1.default.hash(password, salt);
 };
+//create new users
 const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
     let file = req.file;
     try {
@@ -81,6 +84,7 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
                 throw new Error("Team not found");
             }
         }
+        //checkand for admin role and creating one if it does not exist
         if (adminEmail === userData.email) {
             let newPermission = await permission_1.default.create({
                 name: "admin",
@@ -89,6 +93,7 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
             userData.permission = newPermission._id;
         }
         const user = await user_1.default.create(userData);
+        // send email to user that was just created with his or her password
         await (0, sendMail_1.sendEmail)("User created", user.email, `your account has been created and your password is : <strong>${password}</strong>`);
         if (req.user) {
             (0, activity_1.createActivity)("New Staff created", req.user._id);
@@ -180,6 +185,7 @@ const resetPassword = (0, express_async_handler_1.default)(async (req, res) => {
     }
 });
 exports.resetPassword = resetPassword;
+//updating user
 const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
     var _a;
     let file = req.file;
@@ -213,7 +219,7 @@ const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
         }
         let updatedUser = await user_1.default.findByIdAndUpdate({ _id: id }, updateData, {
             new: true,
-        });
+        }).select("-password");
         (0, activity_1.createActivity)(`${updatedUser === null || updatedUser === void 0 ? void 0 : updatedUser.email} was updated`, req.user._id);
         res.status(200).json(updatedUser);
     }
@@ -225,6 +231,7 @@ const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
     }
 });
 exports.updateUser = updateUser;
+//revoking users permission
 const revokePermission = (0, express_async_handler_1.default)(async (req, res) => {
     var _a, _b;
     let userId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.userId;
@@ -250,6 +257,7 @@ const revokePermission = (0, express_async_handler_1.default)(async (req, res) =
     }
 });
 exports.revokePermission = revokePermission;
+//delete users
 const deleteUser = (0, express_async_handler_1.default)(async (req, res, next) => {
     try {
         const userId = req.params.userId;

@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import PermissionModel, { IPermission } from "../models/permission";
 import { createActivity } from "./activity";
 
+//Get all permissions
 const getAllPermission = asyncHandler(async (req: Request, res: Response) => {
   try {
     const permissions: IPermission[] = await PermissionModel.find().sort(
@@ -16,6 +17,7 @@ const getAllPermission = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+//create a permssion
 const createPermission = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { name, roles } = req.body;
@@ -35,10 +37,12 @@ const createPermission = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+//update a permission
 const updatePermission = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { name, roles } = req.body;
     if (roles) {
+      // Validate roles
       if (!Array.isArray(roles)) throw new Error("Invalid roles array");
     }
     const updatedPermission: IPermission | null =
@@ -59,6 +63,7 @@ const updatePermission = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+//delete a permission
 const deletePermission = asyncHandler(async (req: Request, res: Response) => {
   try {
     const deletedPermission = await PermissionModel.findByIdAndDelete(

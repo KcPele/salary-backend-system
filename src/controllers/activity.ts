@@ -4,6 +4,7 @@ import ActivityModel from "../models/activity";
 
 const getAllActivities = asyncHandler(async (req: Request, res: Response) => {
   try {
+    
     const activities = await ActivityModel.find()
       .populate({
         path: "user",

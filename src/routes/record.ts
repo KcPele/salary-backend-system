@@ -10,20 +10,16 @@ import {
 import { permissionMiddleware, tokenMiddleware } from "../middleware";
 const router = express.Router();
 
+//get all records
 router.get("/", tokenMiddleware, permissionMiddleware(["read"]), getAllRecords);
 
-router.get(
-  "/:recordId",
-  tokenMiddleware,
-  getRecord
-);
+//get a particular record
+router.get("/:recordId", tokenMiddleware, getRecord);
 
-router.get(
-  "/user/:userId",
-  tokenMiddleware,
-  getUserRecords
-);
+//get a user reocords
+router.get("/user/:userId", tokenMiddleware, getUserRecords);
 
+//create a new record
 router.post(
   "/",
   tokenMiddleware,
@@ -31,6 +27,7 @@ router.post(
   createRecord
 );
 
+//update record base on reord id
 router.put(
   "/:recordId",
   tokenMiddleware,
@@ -38,6 +35,7 @@ router.put(
   updateRecord
 );
 
+//delete a record
 router.delete(
   "/:recordId",
   tokenMiddleware,

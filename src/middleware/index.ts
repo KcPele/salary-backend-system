@@ -9,6 +9,7 @@ import User, { IUser } from "../models/user";
 import PermissionModel from "../models/permission";
 dotenv.config();
 
+// aws config
 export const s3Config = new S3Client({
   region: process.env.S3_BUCKET_REGION as string,
   credentials: {
@@ -17,12 +18,14 @@ export const s3Config = new S3Client({
   },
 });
 
+// aws s3 bucket config
 const s3 = new aws.S3({
   accessKeyId: process.env.S3_ACCESS_KEY as string,
   secretAccessKey: process.env.S3_ACCESS_SECRET as string,
   region: process.env.S3_BUCKET_REGION as string,
 });
 
+//delete helper function for removing images from aws bucket
 export const s3DeleteImageHelper = (key: string) => {
   s3.deleteObject(
     {
@@ -37,6 +40,7 @@ export const s3DeleteImageHelper = (key: string) => {
   );
 };
 
+//multer config: handling file uplaod
 export const upload = multer({
   storage: multerS3({
     s3: s3Config,
@@ -51,6 +55,7 @@ export const upload = multer({
   }),
 });
 
+//for checking validity of token
 export const tokenMiddleware = async (
   req: Request,
   res: Response,
@@ -76,7 +81,7 @@ export const tokenMiddleware = async (
 };
 
 type Permission = "read" | "create" | "edit" | "delete";
-
+//for checking if user has the required permission
 export const permissionMiddleware = (permissions: Permission[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {

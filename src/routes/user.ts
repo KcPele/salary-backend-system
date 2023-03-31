@@ -14,14 +14,18 @@ import {
 
 const router = express.Router();
 
+//get all users
 router.get(
   "/",
+  tokenMiddleware,
+  permissionMiddleware(["read"]),
   asyncHandler(async (req: express.Request, res: express.Response) => {
     const users = await User.find({}).select("-password").sort("-createdAt");
     res.status(200).json(users);
   })
 );
 
+//get a particular user
 router.get(
   "/:userId",
   asyncHandler(async (req: express.Request, res: express.Response) => {
@@ -33,7 +37,9 @@ router.get(
   })
 );
 
+// login route to generate user token
 router.post("/login", loginUser);
+//create a user
 router.post(
   "/register",
   tokenMiddleware,
@@ -45,10 +51,12 @@ router.post(
 //creating admin once.
 router.post("/register/chainlor-inmda", upload.single("file"), createNewUser);
 
+// password reset
 router.post("/forgot-password", tokenMiddleware, forgotPassword);
 
 router.post("/reset-password/:resetToken", resetPassword);
 
+//update user
 router.put(
   "/:userId",
   tokenMiddleware,
@@ -57,16 +65,19 @@ router.put(
   updateUser
 );
 
+//revert a user permission
 router.delete(
   "/:userId/:permissionId",
   tokenMiddleware,
   permissionMiddleware(["edit"]),
   revokePermission
 );
+
+//delete a user
 router.delete(
   "/:userId",
   tokenMiddleware,
-  permissionMiddleware(["edit"]),
+  permissionMiddleware(["delete"]),
   deleteUser
 );
 export default router;

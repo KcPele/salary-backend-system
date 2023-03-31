@@ -36,6 +36,7 @@ const multer_s3_1 = __importDefault(require("multer-s3"));
 const user_1 = __importDefault(require("../models/user"));
 const permission_1 = __importDefault(require("../models/permission"));
 dotenv.config();
+// aws config
 exports.s3Config = new client_s3_1.S3Client({
     region: process.env.S3_BUCKET_REGION,
     credentials: {
@@ -43,11 +44,13 @@ exports.s3Config = new client_s3_1.S3Client({
         secretAccessKey: process.env.S3_ACCESS_SECRET,
     },
 });
+// aws s3 bucket config
 const s3 = new aws_sdk_1.default.S3({
     accessKeyId: process.env.S3_ACCESS_KEY,
     secretAccessKey: process.env.S3_ACCESS_SECRET,
     region: process.env.S3_BUCKET_REGION,
 });
+//delete helper function for removing images from aws bucket
 const s3DeleteImageHelper = (key) => {
     s3.deleteObject({
         Bucket: process.env.S3_BUCKET,
@@ -59,6 +62,7 @@ const s3DeleteImageHelper = (key) => {
     });
 };
 exports.s3DeleteImageHelper = s3DeleteImageHelper;
+//multer config: handling file uplaod
 exports.upload = (0, multer_1.default)({
     storage: (0, multer_s3_1.default)({
         s3: exports.s3Config,
@@ -72,6 +76,7 @@ exports.upload = (0, multer_1.default)({
         },
     }),
 });
+//for checking validity of token
 const tokenMiddleware = async (req, res, next) => {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
@@ -92,6 +97,7 @@ const tokenMiddleware = async (req, res, next) => {
     }
 };
 exports.tokenMiddleware = tokenMiddleware;
+//for checking if user has the required permission
 const permissionMiddleware = (permissions) => {
     return async (req, res, next) => {
         try {

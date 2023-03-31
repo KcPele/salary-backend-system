@@ -7,6 +7,7 @@ exports.deletePermission = exports.updatePermission = exports.createPermission =
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const permission_1 = __importDefault(require("../models/permission"));
 const activity_1 = require("./activity");
+//Get all permissions
 const getAllPermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const permissions = await permission_1.default.find().sort("-createdAt");
@@ -18,6 +19,7 @@ const getAllPermission = (0, express_async_handler_1.default)(async (req, res) =
     }
 });
 exports.getAllPermission = getAllPermission;
+//create a permssion
 const createPermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const { name, roles } = req.body;
@@ -39,10 +41,12 @@ const createPermission = (0, express_async_handler_1.default)(async (req, res) =
     }
 });
 exports.createPermission = createPermission;
+//update a permission
 const updatePermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const { name, roles } = req.body;
         if (roles) {
+            // Validate roles
             if (!Array.isArray(roles))
                 throw new Error("Invalid roles array");
         }
@@ -58,6 +62,7 @@ const updatePermission = (0, express_async_handler_1.default)(async (req, res) =
     }
 });
 exports.updatePermission = updatePermission;
+//delete a permission
 const deletePermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const deletedPermission = await permission_1.default.findByIdAndDelete(req.params.permissionId);

@@ -6,6 +6,8 @@ export interface ITeam extends Document {
   lead: Types.ObjectId | IUser;
   about: string;
   members: [Types.ObjectId | IUser];
+  total_salary: number;
+  aggregated_salary: number;
 }
 
 interface ITeamModel extends Model<ITeam> {}
@@ -25,6 +27,8 @@ const TeamSchema = new mongoose.Schema<ITeam, ITeamModel>(
         // unique: true,
       },
     ],
+    total_salary: { type: Number, default: 0 },
+    aggregated_salary: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

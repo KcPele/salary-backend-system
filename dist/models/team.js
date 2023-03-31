@@ -18,6 +18,8 @@ const TeamSchema = new mongoose_1.default.Schema({
             // unique: true,
         },
     ],
+    total_salary: { type: Number, default: 0 },
+    aggregated_salary: { type: Number, default: 0 },
 }, { timestamps: true });
 const TeamModel = mongoose_1.default.model("Team", TeamSchema);
 exports.default = TeamModel;
