@@ -9,7 +9,7 @@ import RecordModel from "../models/record";
 //get all teams
 const getAllTeams = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const teams = await TeamModel.find();
+    const teams = await TeamModel.find({ lead: { $ne: null } });
     res.status(200).json(teams);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

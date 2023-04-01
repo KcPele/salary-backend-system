@@ -11,6 +11,7 @@ const mongodb_1 = require("mongodb");
 const activity_1 = require("./activity");
 const getTotalSalaryByUser = async () => {
     const result = await record_1.default.aggregate([
+        { $match: { user: { $ne: null } } },
         {
             $group: {
                 _id: "$user",
@@ -43,10 +44,10 @@ const getAllRecords = (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const totalSalaryByUser = await getTotalSalaryByUser();
         const total = await getTotalSalary();
-        const records = await record_1.default.find()
+        const records = await record_1.default.find({ user: { $ne: null } })
             .populate({
             path: "user",
-            select: "_id email full_name image job_role",
+            select: " email full_name image job_role",
         })
             .sort("-createdAt")
             .lean();
@@ -69,7 +70,7 @@ const getRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const record = await record_1.default.findById(recordId)
             .populate({
             path: "user",
-            select: "_id email full_name image job_role",
+            select: " email full_name image job_role",
         })
             .exec();
         if (!record)
@@ -93,12 +94,18 @@ const getUserRecords = (0, express_async_handler_1.default)(async (req, res) => 
                 $group: {
                     _id: null,
                     total_user_salary: { $sum: "$salary" },
+                    total_user_tax: { $sum: "$tax" },
                 },
             },
         ]);
         res.status(200).json({
             records,
-            totalUserSalary: totalUserSalary[0].total_user_salary,
+            totalUserSalary: totalUserSalary.length
+                ? totalUserSalary[0].total_user_salary
+                : 0,
+            totalUSerTax: totalUserSalary.length
+                ? totalUserSalary[0].total_user_tax
+                : 0,
         });
     }
     catch (error) {

@@ -12,7 +12,7 @@ const record_1 = __importDefault(require("../models/record"));
 //get all teams
 const getAllTeams = (0, express_async_handler_1.default)(async (req, res) => {
     try {
-        const teams = await team_1.default.find();
+        const teams = await team_1.default.find({ lead: { $ne: null } });
         res.status(200).json(teams);
     }
     catch (error) {

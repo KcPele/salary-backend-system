@@ -35,6 +35,15 @@ const schema = new mongoose_1.Schema({
     team: { type: mongoose_1.Schema.Types.ObjectId, ref: "Team" },
     permission: { type: mongoose_1.Schema.Types.ObjectId, ref: "Permission" },
 }, { timestamps: true });
+// schema.pre<IUser>("findOneAndRemove", async function (next) {
+//   try {
+//     console.log(this._id);
+//     const response =
+//     next();
+//   } catch (err: any) {
+//     next(err);
+//   }
+// });
 const User = (0, mongoose_1.model)("User", schema);
 exports.default = User;
 //# sourceMappingURL=user.js.map

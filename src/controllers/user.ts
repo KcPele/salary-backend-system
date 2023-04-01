@@ -11,6 +11,8 @@ import PermissionModel from "../models/permission";
 import { createActivity } from "./activity";
 import { generatePassword } from "../utils";
 import TeamModel from "../models/team";
+import RecordModel from "../models/record";
+import ActivityModel from "../models/activity";
 const privateKey = process.env.PRIVATE_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
 
@@ -77,7 +79,7 @@ const createNewUser = asyncHandler(
         // duplicate key error
         res
           .status(409)
-          .json({ message: "user already exists for this with these detail" });
+          .json({ message: "user already exists with these email" });
       } else {
         res.status(500).json({ message: error.message });
       }
@@ -139,7 +141,6 @@ const forgotPassword = asyncHandler(
             .json({ message: "Error sending password reset emai" });
         });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
   }
@@ -267,14 +268,29 @@ const deleteUser = asyncHandler(
   ) => {
     try {
       const userId = req.params.userId;
-      let user = await User.findByIdAndDelete(userId);
+      let user = await User.findOneAndRemove({ _id: userId });
       if (user?.image.key) {
-        console.log(user.image.key);
         s3DeleteImageHelper(user.image.key);
       }
+      //converting usersid to string to avoid error when using .populate()
+      // await RecordModel.updateMany(
+      //   { user: userId },
+      //   { $unset: { user: "" } }
+      // ).lean();
+      //another option to completely remove the users record
+      await RecordModel.deleteMany({ user: userId });
+      //complete remove the users activity
+      await ActivityModel.deleteMany({ user: userId });
+      //complete remove the users from being a member of a team
+      await TeamModel.updateMany(
+        { members: userId },
+        { $pull: { members: userId } }
+      );
+      //set the lead in a team to string to avoid error when using .populate()
+      // await TeamModel.updateMany( { lead: userId }, { $unset: { lead: "" } });
+
       createActivity(`${user?.email} was deleted`, req.user._id);
       res.status(200).json({
-        data: null,
         message: "User has been deleted",
       });
     } catch (error) {

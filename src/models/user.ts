@@ -12,6 +12,7 @@ import {
 import { createNewUser, loginUser } from "../controllers/user";
 import { IPermission } from "./permission";
 import { ITeam } from "./team";
+import RecordModel from "./record";
 
 export interface IUser extends Document {
   email: string;
@@ -80,6 +81,15 @@ const schema = new Schema<IUser, UserModel>(
   { timestamps: true }
 );
 
-const User = model<IUser, UserModel>("User", schema);
+// schema.pre<IUser>("findOneAndRemove", async function (next) {
+//   try {
+//     console.log(this._id);
+//     const response =
 
+//     next();
+//   } catch (err: any) {
+//     next(err);
+//   }
+// });
+const User = model<IUser, UserModel>("User", schema);
 export default User;

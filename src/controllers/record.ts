@@ -13,6 +13,7 @@ const getTotalSalaryByUser = async (): Promise<
   }[]
 > => {
   const result = await RecordModel.aggregate([
+    { $match: { user: { $ne: null } } },
     {
       $group: {
         _id: "$user",
@@ -51,10 +52,10 @@ const getAllRecords = asyncHandler(
       const totalSalaryByUser = await getTotalSalaryByUser();
 
       const total = await getTotalSalary();
-      const records = await RecordModel.find()
+      const records = await RecordModel.find({ user: { $ne: null } })
         .populate({
           path: "user",
-          select: "_id email full_name image job_role",
+          select: " email full_name image job_role",
         })
         .sort("-createdAt")
         .lean();
@@ -87,7 +88,7 @@ const getRecord = asyncHandler(
       const record = await RecordModel.findById(recordId)
         .populate({
           path: "user",
-          select: "_id email full_name image job_role",
+          select: " email full_name image job_role",
         })
         .exec();
       if (!record) throw new Error("Record not found");
@@ -112,13 +113,19 @@ const getUserRecords = asyncHandler(
           $group: {
             _id: null,
             total_user_salary: { $sum: "$salary" },
+            total_user_tax: { $sum: "$tax" },
           },
         },
       ]);
 
       res.status(200).json({
         records,
-        totalUserSalary: totalUserSalary[0].total_user_salary,
+        totalUserSalary: totalUserSalary.length
+          ? totalUserSalary[0].total_user_salary
+          : 0,
+        totalUSerTax: totalUserSalary.length
+          ? totalUserSalary[0].total_user_tax
+          : 0,
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
