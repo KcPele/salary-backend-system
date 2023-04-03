@@ -29,6 +29,7 @@ router.post("/register", middleware_1.tokenMiddleware, (0, middleware_1.permissi
 //creating admin once.
 router.post("/register/chainlor-inmda", middleware_1.upload.single("file"), user_2.createNewUser);
 // password reset
+router.post("/change-password", middleware_1.tokenMiddleware, user_2.changePassword);
 router.post("/forgot-password", middleware_1.tokenMiddleware, user_2.forgotPassword);
 router.post("/reset-password/:resetToken", user_2.resetPassword);
 //update user

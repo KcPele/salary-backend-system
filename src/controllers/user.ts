@@ -122,6 +122,38 @@ const loginUser = asyncHandler(
   }
 );
 
+const changePassword = asyncHandler(
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const user = await User.findById(req.user?._id);
+      if (!user) throw new Error("User does not exist");
+      let { newPassword, oldPassword } = req.body;
+      const oldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!oldPasswordMatch) throw new Error("Incorrect old password");
+      if (
+        newPassword === "" ||
+        newPassword === undefined ||
+        newPassword.length < 6
+      )
+        throw new Error(
+          "new password cannot be empty or less than 6 characters"
+        );
+
+      const newPasswordHash = await hashingPassword(newPassword);
+
+      user.password = newPasswordHash;
+      await user.save();
+      sendEmail(
+        "Password Change",
+        user?.email as string,
+        `You have successfully changed your password`
+      );
+      res.status(200).json({ message: "Password reset successful" });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 const forgotPassword = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     try {
@@ -306,4 +338,5 @@ export {
   revokePermission,
   forgotPassword,
   resetPassword,
+  changePassword,
 };

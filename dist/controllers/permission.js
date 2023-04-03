@@ -7,6 +7,7 @@ exports.deletePermission = exports.updatePermission = exports.createPermission =
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const permission_1 = __importDefault(require("../models/permission"));
 const activity_1 = require("./activity");
+const user_1 = __importDefault(require("../models/user"));
 //Get all permissions
 const getAllPermission = (0, express_async_handler_1.default)(async (req, res) => {
     try {
@@ -68,6 +69,7 @@ const deletePermission = (0, express_async_handler_1.default)(async (req, res) =
         const deletedPermission = await permission_1.default.findByIdAndDelete(req.params.permissionId);
         if (!deletedPermission)
             throw new Error("Permission not found");
+        await user_1.default.updateMany({ permission: req.params.permissionId }, { permission: null });
         (0, activity_1.createActivity)(`${deletedPermission.name} permssion was deleted`, req.user._id);
         res.status(204).send({ message: "Successfully deleted" });
     }

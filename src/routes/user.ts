@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import User from "../models/user";
 import { permissionMiddleware, tokenMiddleware, upload } from "../middleware";
 import {
+  changePassword,
   createNewUser,
   deleteUser,
   forgotPassword,
@@ -52,6 +53,8 @@ router.post(
 router.post("/register/chainlor-inmda", upload.single("file"), createNewUser);
 
 // password reset
+router.post("/change-password", tokenMiddleware, changePassword);
+
 router.post("/forgot-password", tokenMiddleware, forgotPassword);
 
 router.post("/reset-password/:resetToken", resetPassword);

@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 
 import PermissionModel, { IPermission } from "../models/permission";
 import { createActivity } from "./activity";
+import User from "../models/user";
 
 //Get all permissions
 const getAllPermission = asyncHandler(async (req: Request, res: Response) => {
@@ -70,6 +71,10 @@ const deletePermission = asyncHandler(async (req: Request, res: Response) => {
       req.params.permissionId
     );
     if (!deletedPermission) throw new Error("Permission not found");
+    await User.updateMany(
+      { permission: req.params.permissionId },
+      { permission: null }
+    );
     createActivity(
       `${deletedPermission.name} permssion was deleted`,
       req.user._id

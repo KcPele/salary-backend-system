@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.forgotPassword = exports.revokePermission = exports.deleteUser = exports.loginUser = exports.updateUser = exports.createNewUser = void 0;
+exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.revokePermission = exports.deleteUser = exports.loginUser = exports.updateUser = exports.createNewUser = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
@@ -141,6 +141,31 @@ const loginUser = (0, express_async_handler_1.default)(async (req, res) => {
     }
 });
 exports.loginUser = loginUser;
+const changePassword = (0, express_async_handler_1.default)(async (req, res) => {
+    var _a;
+    try {
+        const user = await user_1.default.findById((_a = req.user) === null || _a === void 0 ? void 0 : _a._id);
+        if (!user)
+            throw new Error("User does not exist");
+        let { newPassword, oldPassword } = req.body;
+        const oldPasswordMatch = await bcrypt_1.default.compare(oldPassword, user.password);
+        if (!oldPasswordMatch)
+            throw new Error("Incorrect old password");
+        if (newPassword === "" ||
+            newPassword === undefined ||
+            newPassword.length < 6)
+            throw new Error("new password cannot be empty or less than 6 characters");
+        const newPasswordHash = await hashingPassword(newPassword);
+        user.password = newPasswordHash;
+        await user.save();
+        (0, sendMail_1.sendEmail)("Password Change", user === null || user === void 0 ? void 0 : user.email, `You have successfully changed your password`);
+        res.status(200).json({ message: "Password reset successful" });
+    }
+    catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.changePassword = changePassword;
 const forgotPassword = (0, express_async_handler_1.default)(async (req, res) => {
     var _a, _b;
     try {
