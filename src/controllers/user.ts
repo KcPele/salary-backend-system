@@ -143,14 +143,14 @@ const changePassword = asyncHandler(
 
       user.password = newPasswordHash;
       await user.save();
-      sendEmail(
+      await sendEmail(
         "Password Change",
         user?.email as string,
         `You have successfully changed your password`
       );
       res.status(200).json({ message: "Password reset successful" });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   }
 );
@@ -191,6 +191,7 @@ const resetPassword = asyncHandler(
       if (!user) throw new Error("wrong credentials");
       const oldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
       if (!oldPasswordMatch) throw new Error("Incorrect old password");
+
       if (
         newPassword === "" ||
         newPassword === undefined ||
@@ -206,7 +207,6 @@ const resetPassword = asyncHandler(
       await user.save();
       res.status(200).json({ message: "Password reset successful" });
     } catch (error: any) {
-      console.error(error);
       res.status(500).json({ message: error?.message });
     }
   }

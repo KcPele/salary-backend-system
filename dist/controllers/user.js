@@ -158,11 +158,11 @@ const changePassword = (0, express_async_handler_1.default)(async (req, res) => 
         const newPasswordHash = await hashingPassword(newPassword);
         user.password = newPasswordHash;
         await user.save();
-        (0, sendMail_1.sendEmail)("Password Change", user === null || user === void 0 ? void 0 : user.email, `You have successfully changed your password`);
+        await (0, sendMail_1.sendEmail)("Password Change", user === null || user === void 0 ? void 0 : user.email, `You have successfully changed your password`);
         res.status(200).json({ message: "Password reset successful" });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: error.message });
     }
 });
 exports.changePassword = changePassword;
@@ -206,7 +206,6 @@ const resetPassword = (0, express_async_handler_1.default)(async (req, res) => {
         res.status(200).json({ message: "Password reset successful" });
     }
     catch (error) {
-        console.error(error);
         res.status(500).json({ message: error === null || error === void 0 ? void 0 : error.message });
     }
 });
