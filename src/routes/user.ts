@@ -72,7 +72,7 @@ router.put(
 );
 
 //revert a user permission
-router.delete(
+router.put(
   "/:userId/:permissionId",
   tokenMiddleware,
   permissionMiddleware(["edit"]),

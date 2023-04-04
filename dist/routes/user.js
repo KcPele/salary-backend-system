@@ -38,7 +38,7 @@ router.post("/reset-password/:resetToken", user_2.resetPassword);
 //update user
 router.put("/:userId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), middleware_1.upload.single("file"), user_2.updateUser);
 //revert a user permission
-router.delete("/:userId/:permissionId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), user_2.revokePermission);
+router.put("/:userId/:permissionId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), user_2.revokePermission);
 //delete a user
 router.delete("/:userId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["delete"]), user_2.deleteUser);
 exports.default = router;
