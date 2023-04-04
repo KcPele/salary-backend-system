@@ -11,7 +11,10 @@ const user_2 = require("../controllers/user");
 const router = express_1.default.Router();
 //get all users
 router.get("/", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["read"]), (0, express_async_handler_1.default)(async (req, res) => {
-    const users = await user_1.default.find({}).select("-password").sort("-createdAt");
+    const users = await user_1.default.find({})
+        .select("-password")
+        .sort("-createdAt")
+        .populate("permission");
     res.status(200).json(users);
 }));
 //get a particular user

@@ -21,7 +21,10 @@ router.get(
   tokenMiddleware,
   permissionMiddleware(["read"]),
   asyncHandler(async (req: express.Request, res: express.Response) => {
-    const users = await User.find({}).select("-password").sort("-createdAt");
+    const users = await User.find({})
+      .select("-password")
+      .sort("-createdAt")
+      .populate("permission");
     res.status(200).json(users);
   })
 );
