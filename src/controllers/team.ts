@@ -257,6 +257,7 @@ const deleteTeam = asyncHandler(async (req: Request, res: Response) => {
     const { teamId } = req.params;
     const team = await TeamModel.findByIdAndDelete(teamId);
     if (!team) throw new Error("Team not found");
+    await User.updateMany({ team: teamId }, { $unset: { team: null } });
     createActivity(`Team ${team.name} was deleted`, req.user._id);
     res.status(200).json({ message: "Team deleted" });
   } catch (error: any) {

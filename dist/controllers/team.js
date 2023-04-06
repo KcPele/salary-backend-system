@@ -259,6 +259,7 @@ const deleteTeam = (0, express_async_handler_1.default)(async (req, res) => {
         const team = await team_1.default.findByIdAndDelete(teamId);
         if (!team)
             throw new Error("Team not found");
+        await user_1.default.updateMany({ team: teamId }, { $unset: { team: null } });
         (0, activity_1.createActivity)(`Team ${team.name} was deleted`, req.user._id);
         res.status(200).json({ message: "Team deleted" });
     }

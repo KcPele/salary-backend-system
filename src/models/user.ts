@@ -34,7 +34,7 @@ export interface IUser extends Document {
   tax_rate: number;
   address: string;
   phone_number: string;
-  team: Types.ObjectId | ITeam;
+  team: Types.ObjectId | ITeam | null;
   permission: Types.ObjectId | IPermission | null;
 }
 
