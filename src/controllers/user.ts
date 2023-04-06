@@ -70,7 +70,7 @@ const createNewUser = asyncHandler(
       if (req.user) {
         createActivity("New Staff created", req.user._id);
       }
-      res.status(200).json({ message: "user created successfully" });
+      res.status(200).json(user);
     } catch (error: any) {
       if (file) {
         s3DeleteImageHelper(file.key);

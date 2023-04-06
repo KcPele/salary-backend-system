@@ -9,10 +9,8 @@ import {
   Types,
   Document,
 } from "mongoose";
-import { createNewUser, loginUser } from "../controllers/user";
 import { IPermission } from "./permission";
 import { ITeam } from "./team";
-import RecordModel from "./record";
 
 export interface IUser extends Document {
   email: string;

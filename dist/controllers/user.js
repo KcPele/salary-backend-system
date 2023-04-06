@@ -100,7 +100,7 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
         if (req.user) {
             (0, activity_1.createActivity)("New Staff created", req.user._id);
         }
-        res.status(200).json({ message: "user created successfully" });
+        res.status(200).json(user);
     }
     catch (error) {
         if (file) {
