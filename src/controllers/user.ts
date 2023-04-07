@@ -95,7 +95,7 @@ interface IUserDocument extends IUserCreated {
 const loginUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     const { email, password } = req.body;
-    const user = (await User.findOne({ email })) as IUserDocument;
+    const user = await User.findOne({ email })?.populate("permission").lean();
     if (!user) {
       res.status(400).json({ error: "Wrong credentials please try again" });
     } else {
@@ -111,11 +111,11 @@ const loginUser = asyncHandler(
           { _id: user._id },
           { last_login: Date.now() }
         );
-        let { password, ...userData } = user._doc;
+        let { password, ...userData } = user;
         res.status(200).json({
           ...userData,
           token,
-          permission: user.permission,
+          // permission: user.permission,
         });
       }
     }

@@ -119,8 +119,9 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
 });
 exports.createNewUser = createNewUser;
 const loginUser = (0, express_async_handler_1.default)(async (req, res) => {
+    var _a;
     const { email, password } = req.body;
-    const user = (await user_1.default.findOne({ email }));
+    const user = await ((_a = user_1.default.findOne({ email })) === null || _a === void 0 ? void 0 : _a.populate("permission").lean());
     if (!user) {
         res.status(400).json({ error: "Wrong credentials please try again" });
     }
@@ -135,8 +136,8 @@ const loginUser = (0, express_async_handler_1.default)(async (req, res) => {
                 (0, activity_1.createActivity)(`${user.email} logged in`, user._id);
             }
             await user_1.default.findByIdAndUpdate({ _id: user._id }, { last_login: Date.now() });
-            let _a = user._doc, { password } = _a, userData = __rest(_a, ["password"]);
-            res.status(200).json(Object.assign(Object.assign({}, userData), { token, permission: user.permission }));
+            let { password } = user, userData = __rest(user, ["password"]);
+            res.status(200).json(Object.assign(Object.assign({}, userData), { token }));
         }
     }
 });
