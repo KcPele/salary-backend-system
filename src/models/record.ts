@@ -18,7 +18,7 @@ const RecordSchema = new mongoose.Schema<IRecord, IRecordModel>(
   {
     address: { type: String, required: true },
     remark: { type: String },
-    is_paid: { type: Boolean, default: false },
+    is_paid: { type: Boolean, default: true },
     salary: { type: Number, required: true },
     tax: { type: Number },
     transaction_url: { type: String },

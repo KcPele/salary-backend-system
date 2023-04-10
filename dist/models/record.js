@@ -7,7 +7,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const RecordSchema = new mongoose_1.default.Schema({
     address: { type: String, required: true },
     remark: { type: String },
-    is_paid: { type: Boolean, default: false },
+    is_paid: { type: Boolean, default: true },
     salary: { type: Number, required: true },
     tax: { type: Number },
     transaction_url: { type: String },
