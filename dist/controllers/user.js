@@ -89,7 +89,7 @@ const createNewUser = (0, express_async_handler_1.default)(async (req, res) => {
         //checkand for admin role and creating one if it does not exist
         if (adminEmail === userData.email) {
             let newPermission = await permission_1.default.create({
-                name: "admin",
+                name: "suber admin",
                 roles: ["read", "create", "edit", "delete"],
             });
             userData.permission = newPermission._id;

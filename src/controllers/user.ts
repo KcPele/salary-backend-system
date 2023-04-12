@@ -54,7 +54,7 @@ const createNewUser = asyncHandler(
       //checkand for admin role and creating one if it does not exist
       if (adminEmail === userData.email) {
         let newPermission = await PermissionModel.create({
-          name: "admin",
+          name: "suber admin",
           roles: ["read", "create", "edit", "delete"],
         });
         userData.permission = newPermission._id;
