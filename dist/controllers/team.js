@@ -69,11 +69,11 @@ const getTeamByMember = (0, express_async_handler_1.default)(async (req, res) =>
         const teams = await team_1.default.find({ members: memberId })
             .populate({
             path: "lead",
-            select: "_id email full_name image",
+            select: "_id email full_name discord_username image",
         })
             .populate({
             path: "members",
-            select: "_id email full_name image",
+            select: "_id email full_name discord_username image",
         })
             .exec();
         res.status(200).json(teams);
@@ -204,7 +204,7 @@ const updateTeam = (0, express_async_handler_1.default)(async (req, res) => {
             about,
         }, { new: true }).populate({
             path: "lead",
-            select: "_id email full_name image",
+            select: "_id email full_name discord_username image",
         });
         (0, activity_1.createActivity)(`Team ${updatedTeam === null || updatedTeam === void 0 ? void 0 : updatedTeam.name} was updated`, req.user._id);
         res.status(200).json(updatedTeam);

@@ -63,11 +63,11 @@ const getTeamByMember = asyncHandler(async (req: Request, res: Response) => {
     const teams = await TeamModel.find({ members: memberId })
       .populate({
         path: "lead",
-        select: "_id email full_name image",
+        select: "_id email full_name discord_username image",
       })
       .populate({
         path: "members",
-        select: "_id email full_name image",
+        select: "_id email full_name discord_username image",
       })
       .exec();
     res.status(200).json(teams);
@@ -207,7 +207,7 @@ const updateTeam = asyncHandler(async (req: Request, res: Response) => {
       { new: true }
     ).populate({
       path: "lead",
-      select: "_id email full_name image",
+      select: "_id email full_name discord_username image",
     });
     createActivity(`Team ${updatedTeam?.name} was updated`, req.user._id);
 

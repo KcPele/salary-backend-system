@@ -23,6 +23,7 @@ const schema = new mongoose_1.Schema({
     },
     full_name: { type: String },
     gender: { type: String },
+    discord_username: { type: String },
     natioanlity: { type: String },
     job_role: { type: String },
     salary: { type: Number, default: 0 },

@@ -23,6 +23,7 @@ export interface IUser extends Document {
   };
   full_name: string;
   gender: string;
+  discord_username: string;
   natioanlity: string;
   salary: number;
   job_role: string;
@@ -64,6 +65,7 @@ const schema = new Schema<IUser, UserModel>(
     },
     full_name: { type: String },
     gender: { type: String },
+    discord_username: { type: String },
     natioanlity: { type: String },
     job_role: { type: String },
     salary: { type: Number, default: 0 },

@@ -47,7 +47,7 @@ const getAllRecords = (0, express_async_handler_1.default)(async (req, res) => {
         const records = await record_1.default.find({ user: { $ne: null } })
             .populate({
             path: "user",
-            select: " email full_name image job_role",
+            select: " email full_name discord_username image job_role",
         })
             .sort("-createdAt")
             .lean();
@@ -70,7 +70,7 @@ const getRecord = (0, express_async_handler_1.default)(async (req, res) => {
         const record = await record_1.default.findById(recordId)
             .populate({
             path: "user",
-            select: " email full_name image job_role",
+            select: " email full_name discord_username image job_role",
         })
             .exec();
         if (!record)

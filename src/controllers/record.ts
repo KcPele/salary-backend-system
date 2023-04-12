@@ -55,7 +55,7 @@ const getAllRecords = asyncHandler(
       const records = await RecordModel.find({ user: { $ne: null } })
         .populate({
           path: "user",
-          select: " email full_name image job_role",
+          select: " email full_name discord_username image job_role",
         })
         .sort("-createdAt")
         .lean();
@@ -88,7 +88,7 @@ const getRecord = asyncHandler(
       const record = await RecordModel.findById(recordId)
         .populate({
           path: "user",
-          select: " email full_name image job_role",
+          select: " email full_name discord_username image job_role",
         })
         .exec();
       if (!record) throw new Error("Record not found");

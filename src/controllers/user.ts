@@ -4,7 +4,7 @@ import express from "express";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User, { IUser, IUserCreated } from "../models/user";
+import User, { IUser } from "../models/user";
 import { sendEmail } from "../services/sendMail";
 import { s3DeleteImageHelper } from "../middleware";
 import PermissionModel from "../models/permission";
@@ -86,11 +86,6 @@ const createNewUser = asyncHandler(
     }
   }
 );
-
-interface IUserDocument extends IUserCreated {
-  _doc: any;
-  _id: any;
-}
 
 const loginUser = asyncHandler(
   async (req: express.Request, res: express.Response) => {
