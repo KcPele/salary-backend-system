@@ -152,57 +152,30 @@ const changePassword = asyncHandler(
 const forgotPassword = asyncHandler(
   async (req: express.Request, res: express.Response) => {
     try {
-      const user = await User.findById(req.user?._id);
-      const resetToken = generateToken(req.user?._id);
+      const { email } = req.body;
+      const user = await User.findOne({ email });
+      if (!user) throw new Error("User does not exist");
+      let newPassword = generatePassword();
+      const newPasswordHash = await hashingPassword(newPassword);
+      await User.findByIdAndUpdate(
+        { _id: user._id },
+        { password: newPasswordHash }
+      );
       sendEmail(
         "Password Reset",
-        user?.email as string,
-        `click the link below to reset your password:\n\n${process.env.HOST_URL}/users/reset-password/${resetToken}`
+        email,
+        `your account has been created and your password is : <strong>${newPassword}</strong>`
       )
         .then((data) =>
-          res.status(200).json({ message: "Password reset email sent" })
+          res
+            .status(200)
+            .json({ message: "New gemerated password sent to your mail" })
         )
         .catch((error) => {
-          res
-            .status(500)
-            .json({ message: "Error sending password reset emai" });
+          throw new Error(error.message);
         });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  }
-);
-
-const resetPassword = asyncHandler(
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const resetToken = req.params?.resetToken;
-      const { newPassword, oldPassword } = req.body;
-      const userId = jwt.verify(
-        resetToken,
-        process.env.PRIVATE_KEY as string
-      ) as jwt.JwtPayload;
-      let user = await User.findById(userId?._id);
-      if (!user) throw new Error("wrong credentials");
-      const oldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!oldPasswordMatch) throw new Error("Incorrect old password");
-
-      if (
-        newPassword === "" ||
-        newPassword === undefined ||
-        newPassword.length < 6
-      )
-        throw new Error(
-          "new password cannot be empty or less than 6 characters"
-        );
-
-      const newPasswordHash = await hashingPassword(newPassword);
-
-      user.password = newPasswordHash;
-      await user.save();
-      res.status(200).json({ message: "Password reset successful" });
     } catch (error: any) {
-      res.status(500).json({ message: error?.message });
+      res.status(500).json({ message: error.message });
     }
   }
 );
@@ -332,6 +305,5 @@ export {
   deleteUser,
   revokePermission,
   forgotPassword,
-  resetPassword,
   changePassword,
 };

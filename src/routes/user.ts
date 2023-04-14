@@ -8,7 +8,6 @@ import {
   deleteUser,
   forgotPassword,
   loginUser,
-  resetPassword,
   revokePermission,
   updateUser,
 } from "../controllers/user";
@@ -58,9 +57,7 @@ router.post("/register/chainlor-inmda", upload.single("file"), createNewUser);
 // password reset
 router.post("/change-password", tokenMiddleware, changePassword);
 
-router.post("/forgot-password", tokenMiddleware, forgotPassword);
-
-router.post("/reset-password/:resetToken", resetPassword);
+router.put("/forgot-password", forgotPassword);
 
 //update user
 router.put(

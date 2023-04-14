@@ -33,8 +33,7 @@ router.post("/register", middleware_1.tokenMiddleware, (0, middleware_1.permissi
 router.post("/register/chainlor-inmda", middleware_1.upload.single("file"), user_2.createNewUser);
 // password reset
 router.post("/change-password", middleware_1.tokenMiddleware, user_2.changePassword);
-router.post("/forgot-password", middleware_1.tokenMiddleware, user_2.forgotPassword);
-router.post("/reset-password/:resetToken", user_2.resetPassword);
+router.put("/forgot-password", user_2.forgotPassword);
 //update user
 router.put("/:userId", middleware_1.tokenMiddleware, (0, middleware_1.permissionMiddleware)(["edit"]), middleware_1.upload.single("file"), user_2.updateUser);
 //revert a user permission

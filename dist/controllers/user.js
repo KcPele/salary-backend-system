@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.revokePermission = exports.deleteUser = exports.loginUser = exports.updateUser = exports.createNewUser = void 0;
+exports.changePassword = exports.forgotPassword = exports.revokePermission = exports.deleteUser = exports.loginUser = exports.updateUser = exports.createNewUser = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
@@ -168,49 +168,27 @@ const changePassword = (0, express_async_handler_1.default)(async (req, res) => 
 });
 exports.changePassword = changePassword;
 const forgotPassword = (0, express_async_handler_1.default)(async (req, res) => {
-    var _a, _b;
     try {
-        const user = await user_1.default.findById((_a = req.user) === null || _a === void 0 ? void 0 : _a._id);
-        const resetToken = generateToken((_b = req.user) === null || _b === void 0 ? void 0 : _b._id);
-        (0, sendMail_1.sendEmail)("Password Reset", user === null || user === void 0 ? void 0 : user.email, `click the link below to reset your password:\n\n${process.env.HOST_URL}/users/reset-password/${resetToken}`)
-            .then((data) => res.status(200).json({ message: "Password reset email sent" }))
+        const { email } = req.body;
+        const user = await user_1.default.findOne({ email });
+        if (!user)
+            throw new Error("User does not exist");
+        let newPassword = (0, utils_1.generatePassword)();
+        const newPasswordHash = await hashingPassword(newPassword);
+        await user_1.default.findByIdAndUpdate({ _id: user._id }, { password: newPasswordHash });
+        (0, sendMail_1.sendEmail)("Password Reset", email, `your account has been created and your password is : <strong>${newPassword}</strong>`)
+            .then((data) => res
+            .status(200)
+            .json({ message: "New gemerated password sent to your mail" }))
             .catch((error) => {
-            res
-                .status(500)
-                .json({ message: "Error sending password reset emai" });
+            throw new Error(error.message);
         });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: error.message });
     }
 });
 exports.forgotPassword = forgotPassword;
-const resetPassword = (0, express_async_handler_1.default)(async (req, res) => {
-    var _a;
-    try {
-        const resetToken = (_a = req.params) === null || _a === void 0 ? void 0 : _a.resetToken;
-        const { newPassword, oldPassword } = req.body;
-        const userId = jsonwebtoken_1.default.verify(resetToken, process.env.PRIVATE_KEY);
-        let user = await user_1.default.findById(userId === null || userId === void 0 ? void 0 : userId._id);
-        if (!user)
-            throw new Error("wrong credentials");
-        const oldPasswordMatch = await bcrypt_1.default.compare(oldPassword, user.password);
-        if (!oldPasswordMatch)
-            throw new Error("Incorrect old password");
-        if (newPassword === "" ||
-            newPassword === undefined ||
-            newPassword.length < 6)
-            throw new Error("new password cannot be empty or less than 6 characters");
-        const newPasswordHash = await hashingPassword(newPassword);
-        user.password = newPasswordHash;
-        await user.save();
-        res.status(200).json({ message: "Password reset successful" });
-    }
-    catch (error) {
-        res.status(500).json({ message: error === null || error === void 0 ? void 0 : error.message });
-    }
-});
-exports.resetPassword = resetPassword;
 //updating user
 const updateUser = (0, express_async_handler_1.default)(async (req, res) => {
     var _a;
